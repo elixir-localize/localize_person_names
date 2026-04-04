@@ -60,6 +60,9 @@ defmodule Localize.PersonName.Formatter do
   @doc false
   def to_iodata(name, formatting_locale, options) do
     with {:ok, name_locale} <- derive_name_locale(name, formatting_locale),
+         # TODO: Enable formatting locale switching once the algorithm correctly
+         # handles CJK locales and checks for name formatting data availability.
+         # {:ok, formatting_locale} <- derive_formatting_locale(name, formatting_locale, name_locale),
          {:ok, formats} <- formats(formatting_locale),
          {:ok, options} <- validate_options(formats, options),
          {:ok, options} <- determine_name_order(name, name_locale, options),
@@ -287,6 +290,13 @@ defmodule Localize.PersonName.Formatter do
     |> Map.put(:given_name, nil)
   end
 
+  # Note: This function intentionally checks for :given_name (the
+  # struct field name) rather than :given (the format field name).
+  # Since format fields use :given, this is effectively a no-op.
+  # The mononym handling works via move_given_to_surname/1 setting
+  # given_name to nil, which causes interpolate_element to return
+  # nil for any :given field — and nil values are properly removed
+  # by the empty field removal logic.
   defp force_given_name_to_binary(format) do
     Enum.map(format, fn
       [:given_name | _rest] -> ""
@@ -579,12 +589,16 @@ defmodule Localize.PersonName.Formatter do
     end
   end
 
+  # Per the spec: "Iterate through the characters of the surname,
+  # then through the given name." Return the script of the first
+  # character whose script is not Common, Inherited, or Unknown.
   defp dominant_script(name) do
-    name
-    |> Map.take([:surname, :given_name])
-    |> Map.values()
-    |> Enum.filter(&is_binary/1)
-    |> Enum.join()
+    text =
+      [name.surname, name.given_name]
+      |> Enum.filter(&is_binary/1)
+      |> Enum.join()
+
+    text
     |> Unicode.script()
     |> Enum.reject(&(&1 in [:common, :inherited, :unknown]))
     |> resolve_cldr_script_name()
@@ -594,7 +608,7 @@ defmodule Localize.PersonName.Formatter do
     Localize.Validity.Script.unicode_to_subtag!(:unknown)
   end
 
-  defp resolve_cldr_script_name([name]) do
+  defp resolve_cldr_script_name([name | _rest]) do
     Localize.Validity.Script.unicode_to_subtag!(name)
   end
 

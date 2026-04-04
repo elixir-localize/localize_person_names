@@ -6,27 +6,27 @@ defmodule Localize.PersonName.FormatTest do
   @all_locales Localize.PersonName.TestData.all_locales()
 
   @failing_locales [
-    # Probably failing because the formatting locale switches (which we don't
-    # currently support).
-    :kok,
+    # Script-aware initial generation needed for complex scripts
+    # (multi-codepoint aksaras in Indic/Southeast Asian scripts).
     :si,
     :my,
-    :yue_Hans,
-    :ti,
     :kn,
     :km,
     :ml,
-    :yo_BJ,
-    :sk,
-    :mr,
-    :gd,
 
-    # These should be investigated further, even with the current implementation
+    # Needs investigation into short format initial generation.
+    :yo_BJ,
+
+    # Sorting format selection picks a pattern with surname2 that
+    # loses the comma separator when surname2 is nil.
     :es_US,
     :es_MX,
-    :es,
+    :es_419,
+
+    # Parenthesis literal lost during empty field removal when
+    # surname-prefix is nil before a parenthetical group.
     :cs,
-    :es_419
+    :sk
   ]
 
   @test_locales @all_locales -- @failing_locales

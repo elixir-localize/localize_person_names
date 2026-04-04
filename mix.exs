@@ -26,7 +26,7 @@ defmodule LocalizePersonNames.MixProject do
   defp deps do
     [
       {:localize, path: "../localize"},
-      {:unicode_string, "~> 1.8"},
+      {:unicode_string, path: "../unicode_string"},
       {:ex_doc, "~> 0.34", optional: true, runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
