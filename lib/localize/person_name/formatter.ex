@@ -710,23 +710,90 @@ defmodule Localize.PersonName.Formatter do
     end
   end
 
+  # Per the spec, derive name order by:
+  # 1. API-requested sorting order (handled by caller via :order option)
+  # 2. PersonName preferredOrder field
+  # 3. Walk the parent locale chain for the name ordering locale,
+  #    checking nameOrderLocales at each step. At each locale L1,
+  #    also check L2 = und-variant (language replaced by "und").
   @doc false
   def determine_name_order(name, name_locale, options) do
-    language_str = to_string(name_locale.language)
-
     case Localize.PersonName.FormatParser.formats_for(name_locale) do
       {:ok, formats} ->
-        locale_order = formats.locale_order
-
         order =
-          options[:order] || name.preferred_order || locale_order[language_str] ||
-            locale_order["und"] || @default_order
+          options[:order] ||
+            name.preferred_order ||
+            walk_locale_order(name_locale, formats.locale_order) ||
+            @default_order
 
         {:ok, Keyword.put(options, :order, order)}
 
       {:error, _} ->
         order = options[:order] || name.preferred_order || @default_order
         {:ok, Keyword.put(options, :order, order)}
+    end
+  end
+
+  # Walk the parent locale chain looking for a match in the
+  # nameOrderLocales data. At each step, try the locale itself
+  # and an "und" variant (language replaced by "und").
+  defp walk_locale_order(locale, locale_order) do
+    candidates = locale_chain_candidates(locale)
+
+    Enum.find_value(candidates, fn candidate ->
+      locale_order[candidate]
+    end)
+  end
+
+  # Build the candidate list for nameOrderLocales matching.
+  # For each locale in the parent chain, produce both the
+  # locale itself and an und-variant. Candidates are strings
+  # matching the format of nameOrderLocales entries (language
+  # subtags, optionally with script and territory).
+  defp locale_chain_candidates(%Localize.LanguageTag{} = tag) do
+    chain = parent_chain(tag, [tag])
+
+    Enum.flat_map(chain, fn locale_tag ->
+      l1 = locale_candidate_string(locale_tag)
+
+      l2 =
+        if locale_tag.language != :und do
+          locale_candidate_string(%{locale_tag | language: :und})
+        else
+          nil
+        end
+
+      if l2 && l2 != l1, do: [l1, l2], else: [l1]
+    end)
+  end
+
+  # Convert a LanguageTag to the string format used in
+  # nameOrderLocales entries (e.g., "de", "und-Latn", "und-JP").
+  defp locale_candidate_string(%{language: lang, script: nil, territory: nil}) do
+    to_string(lang)
+  end
+
+  defp locale_candidate_string(%{language: lang, script: script, territory: nil}) do
+    "#{lang}-#{script}"
+  end
+
+  defp locale_candidate_string(%{language: lang, script: nil, territory: territory}) do
+    "#{lang}-#{territory}"
+  end
+
+  defp locale_candidate_string(%{language: lang, script: script, territory: territory}) do
+    "#{lang}-#{script}-#{territory}"
+  end
+
+  # Walk up the parent locale chain, collecting all locales
+  # from the given tag up to (and including) "und".
+  defp parent_chain(tag, acc) do
+    case Localize.Locale.parent(tag) do
+      {:ok, parent} ->
+        parent_chain(parent, [parent | acc])
+
+      {:error, _} ->
+        Enum.reverse(acc)
     end
   end
 

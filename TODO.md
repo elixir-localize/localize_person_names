@@ -17,14 +17,12 @@ The data availability check works per the spec: a locale is considered to have f
 
 ### Name order parent locale chain
 
-**Priority:** Medium
+**Status:** Implemented
 **Spec section:** [Derive the name order](https://www.unicode.org/reports/tr35/tr35-personNames.html#derive-the-name-order)
 
-`determine_name_order/3` does a flat lookup `locale_order[language_str] || locale_order["und"]`. The spec requires walking the CLDR parent locale chain with `und`-language variants. For example, `de_Latn_DE` should try: `de-Latn-DE` → `de-Latn` → `de-DE` → `de` → `und`, plus `und`-language variants like `und-DE` at each step.
+`determine_name_order/3` walks the CLDR parent locale chain using `Localize.Locale.parent/1`. At each step in the chain, both the locale itself and an `und`-language variant are checked against the `nameOrderLocales` entries. For example, `de-Latn-DE` produces candidates: `de-Latn-DE`, `und-Latn-DE`, `de-Latn`, `und-Latn`, `de`, `und`.
 
-**Impact:** Names from locales with a territory that implies surname-first ordering (e.g., `und-JP`, `und-CN`) but no explicit language won't get correct name ordering. No current test failures since the test data uses locales with explicit languages.
-
-**To fix:** Implement the parent locale chain walk using `Localize.Locale.parent/1`, creating `und`-language variants at each step and checking the `nameOrderLocales` lists.
+Note: current CLDR data contains only bare language codes in `nameOrderLocales` (e.g., `"ja"`, `"ko"`, `"und"`), not territory-based entries like `"und-JP"`. The chain walk is correct per the spec and future-proofs against CLDR adding territory-based entries, but currently produces the same results as a flat language lookup.
 
 ### Core/prefix field synthesis
 
