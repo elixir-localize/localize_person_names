@@ -149,10 +149,29 @@ defmodule Localize.PersonName.Formatter do
     end)
   end
 
+  # Per the spec: "If there are two or more empty fields separated
+  # only by literals, the fields and the literals between them are
+  # removed." This clause handles the two-nil case first, consuming
+  # both nils and the literal between them.
   @doc false
+  def remove_empty_fields([literal_1, nil, literal_2, nil | rest])
+      when is_binary(literal_1) and is_binary(literal_2) do
+    remove_empty_fields([literal_1, nil | rest])
+  end
+
+  # Per the spec: "If there is a single empty field, it is removed."
+  # When a single nil sits between two literals, remove the nil.
+  # Normally the literal following the nil (a separator like ", ")
+  # is dropped since the field it accompanies is absent. However,
+  # when the following literal contains grouping punctuation
+  # (parentheses, brackets), it is preserved by coalescing.
   def remove_empty_fields([literal_1, nil, literal_2 | rest])
       when is_binary(literal_1) and is_binary(literal_2) do
-    remove_empty_fields([literal_1 | rest])
+    if String.contains?(literal_2, ["(", ")", "[", "]"]) do
+      remove_empty_fields([combine_binary(literal_1, literal_2) | rest])
+    else
+      remove_empty_fields([literal_1 | rest])
+    end
   end
 
   def remove_empty_fields([nil | rest]) do
@@ -483,7 +502,7 @@ defmodule Localize.PersonName.Formatter do
 
   defp add_initial(word, _locale, initial_template, acc) do
     word
-    |> String.first()
+    |> first_grapheme()
     |> Localize.Substitution.substitute(initial_template)
     |> add_to_list(acc)
   end
@@ -498,12 +517,24 @@ defmodule Localize.PersonName.Formatter do
 
   defp monogram(word, :el) do
     word
-    |> String.first()
+    |> first_grapheme()
     |> Unicode.unaccent()
   end
 
   defp monogram(word, _locale) do
-    String.first(word)
+    first_grapheme(word)
+  end
+
+  # Use Unicode.String grapheme break segmentation rather than Elixir's
+  # String.first/1, because Erlang's built-in grapheme clustering
+  # differs from UAX #29 for complex scripts (Indic, Khmer, etc.).
+  # For example, Kannada ಕ್ಯಾಥಿ splits as ["ಕ್ಯಾ", "ಥಿ"] in Erlang
+  # but as ["ಕ್", "ಯಾ", "ಥಿ"] per UAX #29, and initials need "ಕ್".
+  defp first_grapheme(word) do
+    case Unicode.String.split(word, break: :grapheme) do
+      [first | _] -> first
+      [] -> word
+    end
   end
 
   defp locale_to_atom(%Localize.LanguageTag{cldr_locale_id: locale_id})

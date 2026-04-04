@@ -6,11 +6,11 @@ defmodule Localize.PersonName.FormatTest do
   @all_locales Localize.PersonName.TestData.all_locales()
 
   @failing_locales [
-    # Script-aware initial generation needed for complex scripts
-    # (multi-codepoint aksaras in Indic/Southeast Asian scripts).
+    # Word-break segmentation differences in complex scripts cause
+    # incorrect initial generation for multi-word names in Myanmar,
+    # Khmer, Sinhala, and Malayalam.
     :si,
     :my,
-    :kn,
     :km,
     :ml,
 
@@ -18,15 +18,11 @@ defmodule Localize.PersonName.FormatTest do
     :yo_BJ,
 
     # Sorting format selection picks a pattern with surname2 that
-    # loses the comma separator when surname2 is nil.
+    # loses the comma separator when surname2 is nil. Documented in
+    # specification_deviances.md.
     :es_US,
     :es_MX,
-    :es_419,
-
-    # Parenthesis literal lost during empty field removal when
-    # surname-prefix is nil before a parenthetical group.
-    :cs,
-    :sk
+    :es_419
   ]
 
   @test_locales @all_locales -- @failing_locales
