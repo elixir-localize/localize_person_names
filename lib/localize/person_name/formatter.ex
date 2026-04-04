@@ -355,15 +355,27 @@ defmodule Localize.PersonName.Formatter do
     format_element(other_given_names, locale, transforms, formats)
   end
 
+  # Per the spec's core/prefix truth table (row 7): when
+  # surname-prefix exists but neither core nor plain surname
+  # exists, prefix should be cleared (return nil).
   defp interpolate_element(
-         %{surname_prefix: surname_prefix},
+         %{surname_prefix: surname_prefix, surname: surname},
          [:surname, :prefix | transforms],
          locale,
          formats
        ) do
-    format_element(surname_prefix, locale, transforms, formats)
+    if is_binary(surname_prefix) and not is_binary(surname) do
+      nil
+    else
+      format_element(surname_prefix, locale, transforms, formats)
+    end
   end
 
+  # Per the spec's core/prefix truth table (rows 2-4): when
+  # core is requested but absent, return the plain surname.
+  # In our data model, surname already holds the plain value
+  # (both "surname" and "surname-core" map to :surname in the
+  # struct), so this is a natural fallback.
   defp interpolate_element(%{surname: surname}, [:surname, :core | transforms], locale, formats) do
     format_element(surname, locale, transforms, formats)
   end
@@ -468,8 +480,18 @@ defmodule Localize.PersonName.Formatter do
     |> join_initials(formats)
   end
 
+  # Per the spec's core/prefix truth table (row 7): when prefix
+  # exists but neither core nor plain surname exists, the prefix
+  # is cleared — so the combined plain surname is also empty.
   defp format_surname(name, locale, transforms, formats) do
-    surname_prefix = format_element(name.surname_prefix, locale, transforms, formats)
+    surname_prefix =
+      if is_binary(name.surname_prefix) and not is_binary(name.surname) do
+        nil
+      else
+        name.surname_prefix
+      end
+
+    surname_prefix = format_element(surname_prefix, locale, transforms, formats)
     surname = format_element(name.surname, locale, transforms, formats)
 
     [surname_prefix, surname]

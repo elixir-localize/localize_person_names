@@ -26,20 +26,16 @@ Note: current CLDR data contains only bare language codes in `nameOrderLocales` 
 
 ### Core/prefix field synthesis
 
-**Priority:** Low
+**Status:** Implemented
 **Spec section:** [Handle core and prefix](https://www.unicode.org/reports/tr35/tr35-personNames.html#handle-core-and-prefix)
 
-The spec defines an 8-row truth table governing how `{surname}` (plain), `{surname-prefix}`, and `{surname-core}` interact when some values are absent. The current implementation handles:
+The spec's 8-row truth table for `{surname}`, `{surname-prefix}`, and `{surname-core}` interaction is fully implemented:
 
-* `{surname-core}` falls back to plain `surname` when no explicit core exists.
-* `{surname}` (plain) combines prefix + core when both exist.
+* `{surname-core}` falls back to plain `surname` when no explicit core exists (rows 2–4).
+* `{surname}` (plain) combines `prefix + " " + core` when both exist (row 5).
+* `{surname-prefix}` is cleared when prefix exists but surname (core/plain) is absent (row 7). This also applies to the combined plain `{surname}` value — `format_surname` suppresses the prefix when no surname exists.
 
-Not implemented:
-
-* Synthesising plain `surname` from `prefix + " " + core` when only prefix and core are provided and `{surname}` (plain) is requested.
-* Returning empty for `{surname-prefix}` when prefix exists but neither core nor plain exist.
-
-**Impact:** No current test failures. Would affect names that provide only `surname_prefix` and `surname` (as core) without a plain surname value.
+Note: in our data model, the struct has `surname_prefix` and `surname` (no separate core field). Both `"surname"` and `"surname-core"` from CLDR test data map to `:surname`, so core and plain are the same field. This means rows 1–4 (core absent, plain present) and row 5 (plain absent, core present) are handled implicitly by the data model.
 
 ## Excluded Locales
 
