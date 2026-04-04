@@ -12,7 +12,7 @@ defmodule Localize.PersonName.Formatter do
   @default_usage :addressing
   @preferred_order [:given_first, :surname_first, :sorting]
 
-  @format_options [:format, :usage, :order, :formality, :locale]
+  @format_options [:format, :usage, :order, :formality, :locale, :locale_switching]
 
   @typedoc "Valid :format option"
   @type format :: unquote(type_from_list.(@format))
@@ -59,10 +59,11 @@ defmodule Localize.PersonName.Formatter do
 
   @doc false
   def to_iodata(name, formatting_locale, options) do
+    locale_switching = Keyword.get(options, :locale_switching, false)
+
     with {:ok, name_locale} <- derive_name_locale(name, formatting_locale),
-         # TODO: Enable formatting locale switching once the algorithm correctly
-         # handles CJK locales and checks for name formatting data availability.
-         # {:ok, formatting_locale} <- derive_formatting_locale(name, formatting_locale, name_locale),
+         {:ok, formatting_locale} <-
+           maybe_switch_locale(locale_switching, name, formatting_locale, name_locale),
          {:ok, formats} <- formats(formatting_locale),
          {:ok, options} <- validate_options(formats, options),
          {:ok, options} <- determine_name_order(name, name_locale, options),
@@ -75,11 +76,20 @@ defmodule Localize.PersonName.Formatter do
     end
   end
 
+  defp maybe_switch_locale(false, _name, formatting_locale, _name_locale) do
+    {:ok, formatting_locale}
+  end
+
+  defp maybe_switch_locale(true, name, formatting_locale, name_locale) do
+    derive_formatting_locale(name, formatting_locale, name_locale)
+  end
+
   defp validate_options(formats, options) do
     options =
       default_options(formats)
       |> Keyword.merge(options)
       |> Keyword.delete(:locale)
+      |> Keyword.delete(:locale_switching)
       |> Keyword.take(@format_options)
 
     Enum.reduce_while(options, {:ok, options}, fn
@@ -605,18 +615,30 @@ defmodule Localize.PersonName.Formatter do
     end
   end
 
-  # Derive the formatting locale
-  def derive_formatting_locale(name, formatting_locale, name_locale) do
-    cond do
-      considered_the_same_script?(formatting_locale.script, name_locale.script) ->
-        {:ok, formatting_locale}
+  # Derive the formatting locale per the spec:
+  # "If the name script doesn't match the formatting script:
+  #  1. If the name locale has name formatting data, then set
+  #     the formatting locale to the name locale.
+  #  2. Otherwise, set the formatting locale to the maximal
+  #     likely locale for und + name script + name region."
+  @doc false
+  def derive_formatting_locale(_name, formatting_locale, name_locale) do
+    if considered_the_same_script?(formatting_locale.script, name_locale.script) do
+      {:ok, formatting_locale}
+    else
+      name_cldr_id = Localize.Locale.to_locale_id(name_locale)
 
-      dominant_script(name) == name_locale.script ->
+      if Localize.PersonName.FormatParser.has_formatting_data?(name_cldr_id) do
         {:ok, name_locale}
+      else
+        name_script = name_locale.script
 
-      true ->
-        name_script = dominant_script(name)
-        find_likely_locale(name_script, name_locale.territory)
+        case find_likely_locale(name_script, name_locale.territory) do
+          {:ok, nil} -> {:ok, formatting_locale}
+          {:ok, candidate} -> {:ok, candidate}
+          {:error, _} -> {:ok, formatting_locale}
+        end
+      end
     end
   end
 

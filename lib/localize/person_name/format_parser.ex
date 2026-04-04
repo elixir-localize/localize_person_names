@@ -36,6 +36,37 @@ defmodule Localize.PersonName.FormatParser do
     formats_for(String.to_atom(locale_id))
   end
 
+  @doc """
+  Returns whether a locale has person name formatting data that
+  differs from the root locale.
+
+  Per the CLDR spec, a locale "has name formatting data" when its
+  `nameOrderLocales` lists (`given_first` or `surname_first`) differ
+  from root. This is used to decide whether the formatting locale
+  should be switched to the name locale when scripts differ.
+
+  """
+  @spec has_formatting_data?(atom() | Localize.LanguageTag.t()) :: boolean()
+  def has_formatting_data?(%Localize.LanguageTag{cldr_locale_id: locale_id}) do
+    has_formatting_data?(locale_id)
+  end
+
+  def has_formatting_data?(locale_id) when is_atom(locale_id) do
+    with {:ok, locale_data} <- Localize.Locale.get(locale_id, [:person_names]),
+         {:ok, root_data} <- Localize.Locale.get(:und, [:person_names]) do
+      locale_given = Map.get(locale_data || %{}, :given_first, [])
+      locale_surname = Map.get(locale_data || %{}, :surname_first, [])
+      root_given = Map.get(root_data || %{}, :given_first, [])
+      root_surname = Map.get(root_data || %{}, :surname_first, [])
+
+      locale_given != root_given or locale_surname != root_surname
+    else
+      _ -> false
+    end
+  end
+
+  def has_formatting_data?(_), do: false
+
   defp load_and_parse(locale_id) do
     case Localize.Locale.get(locale_id, [:person_names]) do
       {:ok, locale_data} when is_map(locale_data) ->

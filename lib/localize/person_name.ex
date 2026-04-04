@@ -234,6 +234,13 @@ defmodule Localize.PersonName do
     `t:Localize.LanguageTag.t/0`. The default is
     `Localize.get_locale()`.
 
+  * `:locale_switching` when `true`, switches the formatting
+    locale to match the name's script when they differ. For
+    example, a Latin-script name formatted in a Japanese locale
+    will use Latin-based formatting patterns. The default is
+    `false` for compatibility with the CLDR test data. See
+    `TODO.md` for details.
+
   ### Returns
 
   * `{:ok, formatted_name}` or
