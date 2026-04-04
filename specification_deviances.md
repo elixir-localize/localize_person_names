@@ -148,3 +148,150 @@ The spec could be improved by explicitly addressing how grouping punctuation sho
 
 * `cs.txt` line 316: `parameters; sorting; long; referring; formal` → expected `"Machová, Alexandra Zuzana (paní, Ph.D.)"`
 * `sk.txt` line 307: `parameters; sorting; long; referring; formal` → expected `"Machová, Alexandra Zuzana (paní, Ph.D.)"`
+
+## 3. Initial Derivation Requires UAX #29 Grapheme Clusters, Not Default Unicode Grapheme Clusters
+
+### Affected locales
+
+`kn` (Kannada), `km` (Khmer), `ml` (Malayalam), `si` (Sinhala), `my` (Myanmar) — and potentially any locale using a complex Brahmic script.
+
+### Summary
+
+The spec says initials are derived by taking the "first grapheme cluster" of each word, but does not specify which grapheme cluster algorithm to use. The CLDR test data expects results consistent with [UAX #29 (Unicode Text Segmentation)](https://www.unicode.org/reports/tr29/) grapheme cluster boundaries, which differ from the default Unicode grapheme cluster boundaries defined in [UAX #44 (Unicode Character Database)](https://www.unicode.org/reports/tr44/) and implemented by most standard library string functions.
+
+The distinction matters for Brahmic scripts (Devanagari, Kannada, Khmer, Malayalam, Sinhala, Myanmar, etc.) where a virama (halant) character joins consonants into conjuncts. The two algorithms produce different first-grapheme results for conjunct consonants, and the CLDR test data is consistent only with the UAX #29 definition.
+
+### Specification text
+
+From [Derive Initials](https://www.unicode.org/reports/tr35/tr35-personNames.html#derive-initials):
+
+> To derive an initial from a name field value, the first grapheme cluster is extracted.
+
+The spec does not qualify which grapheme cluster definition to use.
+
+### The two grapheme cluster standards
+
+**Default (legacy) grapheme clusters** are defined in [UAX #44, Section 5.15](https://www.unicode.org/reports/tr44/#Default_Grapheme_Cluster_Boundary). This is the algorithm used by most programming language standard libraries, including Erlang/OTP's `string` module (which underlies Elixir's `String.first/1` and `String.graphemes/1`). In this algorithm, a virama (U+0CCD in Kannada, U+17D2 in Khmer, etc.) is a combining mark that joins with the preceding AND following characters into a single cluster.
+
+**Extended grapheme clusters** are defined in [UAX #29, Section 3.1](https://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries). This algorithm includes script-specific tailoring rules via the `Grapheme_Cluster_Break` property. For Indic scripts, UAX #29 defines `InCB` (Indic Conjunct Break) properties that cause the virama to break the cluster at the conjunct boundary, producing shorter clusters.
+
+### How to reproduce
+
+Kannada word `ಕ್ಯಾಥಿ` (transliterated "Kyāthi"), composed of the codepoints:
+
+| Codepoint | Character | Name |
+|-----------|-----------|------|
+| U+0C95 | ಕ | KANNADA LETTER KA |
+| U+0CCD | ್ | KANNADA SIGN VIRAMA |
+| U+0CAF | ಯ | KANNADA LETTER YA |
+| U+0CBE | ಾ | KANNADA VOWEL SIGN AA |
+| U+0CA5 | ಥ | KANNADA LETTER THA |
+| U+0CBF | ಿ | KANNADA VOWEL SIGN I |
+
+**Default grapheme clusters** (Erlang/Elixir `String.graphemes/1`):
+
+```
+["ಕ್ಯಾ", "ಥಿ"]   — 2 clusters
+```
+
+The virama (U+0CCD) joins KA + YA + AA into one large conjunct cluster.
+
+**UAX #29 extended grapheme clusters** (ICU, `Unicode.String.split(break: :grapheme)`):
+
+```
+["ಕ್", "ಯಾ", "ಥಿ"]   — 3 clusters
+```
+
+The virama only joins with the preceding KA, and YA starts a new cluster.
+
+### Expected result (from CLDR test data)
+
+The initial for `ಕ್ಯಾಥಿ` is `ಕ್` (KA + VIRAMA, 2 codepoints) — the first UAX #29 extended grapheme cluster.
+
+### Actual result using default grapheme clusters
+
+The initial is `ಕ್ಯಾ` (KA + VIRAMA + YA + AA, 4 codepoints) — the first default grapheme cluster, which includes the full conjunct.
+
+### Further examples across scripts
+
+| Script | Word | Default first cluster | UAX #29 first cluster | CLDR expected |
+|--------|------|----------------------|----------------------|---------------|
+| Kannada | ಕ್ಯಾಥಿ | ಕ್ಯಾ (4 codepoints) | ಕ್ (2 codepoints) | ಕ್ |
+| Khmer | ហ្សាសាស្តូ | ហ្ (2 codepoints) | ហ្សា (4 codepoints) | ហ្សា |
+| Malayalam | സ്‌റ്റോബർ | സ്‌റ്റോ (7 codepoints) | സ്‌ (3 codepoints) | സ്‌ |
+
+Note that Khmer is the inverse case: the default cluster is too SHORT and the UAX #29 cluster is LONGER. This is because Khmer's coeng (U+17D2) has different `Grapheme_Cluster_Break` properties than Indic viramas, and UAX #29 correctly groups the subscript consonant with its base.
+
+### Analysis
+
+The spec should explicitly state that initial derivation uses **UAX #29 extended grapheme clusters**, not default grapheme clusters. This distinction is critical because:
+
+1. **Most standard library implementations use default clusters.** Erlang/OTP, Go's `unicode/utf8`, Python's `grapheme` module, and many others implement the simpler default algorithm. Only libraries that specifically implement UAX #29 (such as ICU, Rust's `unicode-segmentation` crate, and the Elixir `unicode_string` package) produce the correct results.
+
+2. **The difference is significant for Brahmic scripts.** These scripts represent roughly 40% of the world's writing systems by user population (Devanagari, Bengali, Tamil, Telugu, Kannada, Malayalam, Sinhala, Thai, Lao, Khmer, Myanmar, Tibetan, and others). An implementation using default grapheme clusters will produce incorrect initials for names in any of these scripts.
+
+3. **The two algorithms diverge specifically at virama/halant boundaries.** The virama character (or its equivalent: coeng in Khmer, asat in Myanmar, al-lakuna in Sinhala) is the point where the algorithms differ. UAX #29's `InCB` (Indic Conjunct Break) property tables define script-specific rules for how these characters interact with cluster boundaries.
+
+### Suggested spec clarification
+
+The phrase "first grapheme cluster" in the initial derivation section should be amended to read:
+
+> To derive an initial from a name field value, the first **extended grapheme cluster** (as defined by [UAX #29](https://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries)) is extracted.
+
+### Test data references
+
+* `kn.txt` line 522: initial for `ಕ್ಯಾಥಿ` → expected `ಕ್.`
+* `km.txt` line 444: initial for `ហ្សាសាស្តូ` → expected `ហ្សា.`
+* `ml.txt` line 440: initial for `സ്‌റ്റോബർ` → expected `സ്‌.`
+
+## 4. Test Data / Locale Data Mismatch for yo_BJ (Yoruba-Benin)
+
+### Affected locales
+
+`yo_BJ`
+
+### Summary
+
+The `yo_BJ` test data expects initials (e.g., `"O. Adeboye"`) for `short/referring/formal` formats, but the `yo_BJ` locale data contains no `-initial` modifier in those format patterns. The format pattern `{given} {given2} {surname} {credentials}` outputs full names, not initials. The parent locale `yo` has identical format patterns and its test data correctly expects full names for the same format combinations.
+
+### How to reproduce
+
+Locale `yo_BJ`, format parameters: `order: givenFirst, length: short, usage: referring, formality: formal`.
+
+The locale format pattern is:
+
+```
+{given} {given2} {surname} {credentials}
+```
+
+Input PersonName: `given: "Olabisi", surname: "Adeboye"`, locale: `yo_BJ`.
+
+### Expected result (from CLDR test data)
+
+`"O. Adeboye"` — initial + surname.
+
+### Actual result (per locale format data)
+
+`"Olabisi Adeboye"` — full given name + surname, because the format pattern has no `-initial` modifier on the `{given}` field.
+
+### Comparison with parent locale yo
+
+The `yo` locale has the identical format pattern for `givenFirst/short/referring/formal`:
+
+```
+{given} {given2} {surname} {credentials}
+```
+
+The `yo` test data expects `"Olabisi Adeboye"` (full name) for this same combination — and this passes correctly.
+
+### Analysis
+
+The `yo_BJ` test data appears to have been generated against a different version of the `yo_BJ` locale data that included `-initial` modifiers in the short/formal format patterns (e.g., `{given-initial} {given2-initial} {surname}`). The current locale data does not include these modifiers, making the test expectations inconsistent with the format patterns.
+
+This affects 27 test cases in `yo_BJ.txt`, all involving `short/referring` or `medium/referring` format combinations where initials are expected but not produced.
+
+### Test data references
+
+* `yo_BJ.txt` line 152: `parameters; givenFirst; short; referring; formal` → expected `"O. Adeboye"`, actual `"Olabisi Adeboye"`
+* `yo_BJ.txt` line 252: `parameters; sorting; short; referring; formal` → expected `"Akintola, A. A."`, actual `"Akintola, Adeolu Adegboyega"`
+* Compare `yo.txt` line 143: `parameters; givenFirst; short; referring; formal` → expected `"Olabisi Adeboye"` (full name, matches format data)
