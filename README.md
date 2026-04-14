@@ -1,6 +1,6 @@
 # Localize Person Names
 
-Locale-aware person name formatting built on the Unicode CLDR [Person Names](https://www.unicode.org/reports/tr35/tr35-personNames.html) specification and the [Localize](https://github.com/elixir-cldr/localize) library.
+Locale-aware person name formatting built on the Unicode CLDR [Person Names](https://www.unicode.org/reports/tr35/tr35-personNames.html) specification and the [Localize](https://hexdocs.pm/localize/) library.
 
 ## Installation
 
@@ -16,13 +16,7 @@ end
 
 ```elixir
 # Create a person name
-{:ok, name} = Localize.PersonName.new(
-  title: "Mr.",
-  given_name: "José",
-  surname: "Valim",
-  credentials: "Ph.D.",
-  locale: "pt"
-)
+{:ok, name} = Localize.PersonName.new(title: "Mr.", given_name: "José", surname: "Valim", credentials: "Ph.D.", locale: "pt")
 
 # Format with defaults (locale-driven length, formality, addressing usage)
 Localize.PersonName.to_string(name)
@@ -65,15 +59,25 @@ Localize.PersonName.to_string(name, locale: :ja)
 | `preferred_order` | Explicit ordering preference | `:given_first`, `:surname_first` |
 | `locale` | Locale of the name data | `"pt"`, `Localize.LanguageTag.t()` |
 
-## Behaviour
+## Integrating existing structs
 
-Any struct can participate in person name formatting by implementing the `Localize.PersonName` behaviour callbacks. The struct is cast to a `Localize.PersonName` struct before formatting.
+Any struct can participate in person name formatting, either through the `Localize.PersonName.Convertible` protocol or through the `Localize.PersonName` behaviour. See [Integrating existing name structs](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/guides/integrating_existing_structs.md) for the full comparison and recommendations.
+
+## MF2 message formatting
+
+A `:personName` MF2 function is provided as `Localize.PersonName.MF2` for use with [Localize.Message](https://hexdocs.pm/localize/Localize.Message.html). See [Using Localize.PersonName with Localize.Message](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/guides/message_formatting.md) for formal and informal worked examples.
+
+## Guides
+
+* [Integrating existing name structs](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/guides/integrating_existing_structs.md) — two ways to wire existing domain structs (`%User{}`, `%Customer{}`, etc.) into the formatter: the `Localize.PersonName.Convertible` protocol (recommended) and the `Localize.PersonName` behaviour.
+
+* [Using Localize.PersonName with Localize.Message](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/guides/message_formatting.md) — integrating person name formatting into MF2 message templates via a custom function, with formal and informal worked examples.
 
 ## Conformance
 
 ### Test coverage
 
-39,719 tests across 120 CLDR locales, 0 failures. Test data is from the CLDR person name test suite, which provides format conformance tests for each locale covering all combinations of order, length, usage, and formality.
+39,731 tests across 120 CLDR locales, 0 failures. Test data is from the CLDR person name test suite, which provides format conformance tests for each locale covering all combinations of order, length, usage, and formality.
 
 ### Locale coverage
 
@@ -87,7 +91,7 @@ Of the 128 CLDR locale test data files available, 120 pass all tests. The 8 excl
 
 ### Specification deviances
 
-See `specification_deviances.md` for detailed analysis of four issues:
+See [specification_deviances.md](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/specification_deviances.md) for detailed analysis of four issues:
 
 1. **Format selection tiebreaker** (es_US, es_MX, es_419) — Spec says "fewest unpopulated fields" but test data expects different selection.
 
@@ -99,4 +103,4 @@ See `specification_deviances.md` for detailed analysis of four issues:
 
 ## Known Limitations
 
-See `TODO.md` for tracked implementation gaps.
+See [TODO.md](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/TODO.md) for tracked implementation gaps.

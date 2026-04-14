@@ -25,17 +25,51 @@ defmodule Localize.PersonName do
 
   * `to_iodata!/2` — formats a person name as iodata, raising on error.
 
-  ## Behaviour
+  ## Integrating existing structs
 
-  Any struct can participate in person name formatting by
-  implementing the `Localize.PersonName` behaviour callbacks.
-  The struct is then cast to a `Localize.PersonName` struct
-  via `cast_to_person_name/1` before formatting.
+  Any struct can participate in person name formatting in two ways:
+
+  * Implement the `Localize.PersonName.Convertible` protocol —
+    a single function that returns a `Localize.PersonName` struct.
+    Recommended for most cases, including third-party structs.
+
+  * Implement the `Localize.PersonName` behaviour — eleven
+    callbacks on the struct's module, each returning one name
+    field. Use this when the struct's module is under your control
+    and you want individual name fields exposed as module functions.
+
+  When the formatter receives a struct, it first looks for a
+  `Convertible` protocol implementation; if none is found, it falls
+  back to the behaviour callbacks via `cast_to_person_name/1`.
 
   """
 
   import Kernel, except: [to_string: 1]
   alias Localize.PersonName.Formatter
+
+  @typedoc "Valid `:format` option."
+  @type format :: :short | :medium | :long
+
+  @typedoc "Valid `:order` option."
+  @type name_order :: :given_first | :surname_first | :sorting
+
+  @typedoc "Valid `:usage` option."
+  @type usage :: :addressing | :referring | :monogram
+
+  @typedoc "Valid `:formality` option."
+  @type formality :: :formal | :informal
+
+  @typedoc "An option to `to_string/2` and `to_iodata/2`."
+  @type format_option ::
+          {:format, format()}
+          | {:order, name_order()}
+          | {:usage, usage()}
+          | {:formality, formality()}
+          | {:locale, Localize.LanguageTag.t() | atom() | String.t()}
+          | {:locale_switching, boolean()}
+
+  @typedoc "A keyword list of options for `to_string/2` and `to_iodata/2`."
+  @type format_options :: [format_option()]
 
   @doc "Return the title as a `t:String.t/0` or `nil` for the given struct."
   @callback title(name :: struct()) :: String.t() | nil
@@ -68,7 +102,7 @@ defmodule Localize.PersonName do
   @callback locale(name :: struct()) :: Localize.LanguageTag.t() | nil
 
   @doc "Return the preferred name order for the given struct."
-  @callback preferred_order(name :: struct()) :: Formatter.name_order()
+  @callback preferred_order(name :: struct()) :: name_order()
 
   @person_name [
     title: nil,
@@ -101,7 +135,7 @@ defmodule Localize.PersonName do
           other_surnames: String.t() | nil,
           generation: String.t() | nil,
           credentials: String.t() | nil,
-          preferred_order: Formatter.name_order() | nil,
+          preferred_order: name_order() | nil,
           locale: Localize.LanguageTag.t() | nil
         }
 
@@ -258,7 +292,7 @@ defmodule Localize.PersonName do
       {:ok, "Mr. José Valim Ph.D."}
 
   """
-  @spec to_string(name :: struct(), options :: Formatter.format_options()) ::
+  @spec to_string(name :: struct(), options :: format_options()) ::
           {:ok, String.t()} | {:error, error_message()}
   def to_string(name, options \\ []) when is_struct(name) do
     with {:ok, iodata} <- to_iodata(name, options) do
@@ -280,7 +314,7 @@ defmodule Localize.PersonName do
       "Mr. José Valim Ph.D."
 
   """
-  @spec to_string!(name :: struct(), options :: Formatter.format_options()) ::
+  @spec to_string!(name :: struct(), options :: format_options()) ::
           String.t() | no_return()
   def to_string!(name, options \\ []) when is_struct(name) do
     case to_string(name, options) do
@@ -311,7 +345,7 @@ defmodule Localize.PersonName do
       {:ok, ["Mr.", " ", "Valim"]}
 
   """
-  @spec to_iodata(person_name :: struct(), options :: Formatter.format_options()) ::
+  @spec to_iodata(person_name :: struct(), options :: format_options()) ::
           {:ok, :erlang.iodata()} | {:error, error_message()}
   def to_iodata(person_name, options \\ []) when is_struct(person_name) do
     locale = Keyword.get(options, :locale, Localize.get_locale())
@@ -326,7 +360,7 @@ defmodule Localize.PersonName do
   Same as `to_iodata/2` but raises on error.
 
   """
-  @spec to_iodata!(person_name :: struct(), options :: Formatter.format_options()) ::
+  @spec to_iodata!(person_name :: struct(), options :: format_options()) ::
           :erlang.iodata() | no_return()
   def to_iodata!(person_name, options \\ []) when is_struct(person_name) do
     case to_iodata(person_name, options) do
@@ -350,19 +384,19 @@ defmodule Localize.PersonName do
 
   """
   @spec cast_to_person_name(struct()) :: t()
-  def cast_to_person_name(%module{} = _name) do
+  def cast_to_person_name(%module{} = name) do
     %__MODULE__{
-      title: module.title(),
-      given_name: module.given_name(),
-      other_given_names: module.other_given_names(),
-      informal_given_name: module.informal_given_name(),
-      surname_prefix: module.surname_prefix(),
-      surname: module.surname(),
-      other_surnames: module.other_surnames(),
-      generation: module.generation(),
-      credentials: module.credentials(),
-      preferred_order: module.preferred_order(),
-      locale: module.locale()
+      title: module.title(name),
+      given_name: module.given_name(name),
+      other_given_names: module.other_given_names(name),
+      informal_given_name: module.informal_given_name(name),
+      surname_prefix: module.surname_prefix(name),
+      surname: module.surname(name),
+      other_surnames: module.other_surnames(name),
+      generation: module.generation(name),
+      credentials: module.credentials(name),
+      preferred_order: module.preferred_order(name),
+      locale: module.locale(name)
     }
   end
 
@@ -422,9 +456,22 @@ defmodule Localize.PersonName do
   end
 
   defp maybe_cast_name(%module{} = name) when module != __MODULE__ do
-    name
-    |> cast_to_person_name()
-    |> Formatter.wrap(:ok)
+    # Dispatch based on which integration path the struct uses:
+    # the Localize.PersonName behaviour (detected by checking for
+    # an exported given_name/1 function on the struct's module) or
+    # the Localize.PersonName.Convertible protocol. apply/3 is used
+    # for the protocol call so the compiler's type checker doesn't
+    # flag it as unreachable when only Localize.PersonName itself
+    # has a consolidated protocol implementation at compile time —
+    # user-defined implementations are resolved at runtime.
+    if function_exported?(module, :given_name, 1) do
+      name
+      |> cast_to_person_name()
+      |> Formatter.wrap(:ok)
+    else
+      apply(Localize.PersonName.Convertible, :to_person_name, [name])
+      |> Formatter.wrap(:ok)
+    end
   end
 
   # A name needs only a given name to be minimally viable.

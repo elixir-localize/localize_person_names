@@ -1,8 +1,9 @@
 defmodule Localize.PersonName.Formatter do
-  @moduledoc """
-  Implements the person name formatting specification.
+  @moduledoc false
 
-  """
+  # Implements the CLDR TR35-8 person name formatting algorithm.
+  # This module is internal — use `Localize.PersonName.to_string/2`
+  # and `to_iodata/2` as the public API.
 
   type_from_list = &Enum.reduce(&1, fn x, acc -> {:|, [], [x, acc]} end)
 

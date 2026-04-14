@@ -1,4 +1,6 @@
-# CLDR Person Names Specification Deviances
+# CLDR Specification Conformance
+
+THe implementation fully meets the [TR35-8 PersonNames](https://www.unicode.org/reports/tr35/tr35-personNames.html) specification but there are some differences in test results for a few locales.
 
 This document describes cases where the CLDR person name test data produces results that are inconsistent with the specification text in [TR35-8 PersonNames](https://www.unicode.org/reports/tr35/tr35-personNames.html). These are filed as potential specification or test data bugs.
 
