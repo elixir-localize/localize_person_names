@@ -65,13 +65,12 @@ defmodule LocalizePersonNames.MixProject do
       extras:
         [
           "README.md",
-          "LICENSE.md",
+          "LICENSE.md"
         ] ++ Path.wildcard("guides/*.md"),
       formatters: ["html", "markdown"],
       groups_for_modules: groups_for_modules(),
       groups_for_extras: groups_for_extras(),
-      skip_undefined_reference_warnings_on:
-        ["conformance.md"] ++ Path.wildcard("guides/*.md")
+      skip_undefined_reference_warnings_on: ["conformance.md"] ++ Path.wildcard("guides/*.md")
     ]
   end
 
