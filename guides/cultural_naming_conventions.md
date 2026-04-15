@@ -138,6 +138,62 @@ Getting names right is not only a courtesy — it's a measurable commercial leve
 
 Names are the most personal of personalizations. Getting someone's name wrong in an email salutation is a worse experience than not sending the email at all, because it tells the recipient that the sender has their data but can't be bothered to use it correctly. A single incident is tolerable; a pattern of wrong-name emails from the same brand produces churn. Epsilon's data says 80% of consumers weigh personalization in their purchase decisions; McKinsey's data says 76% are frustrated when personalization fails; the product teams of any company sending more than a few thousand emails a month are running a name-handling quality gate whether they realise it or not.
 
+## How this library addresses the problem
+
+`Localize.PersonName` is a direct implementation of the [CLDR Person Names specification](https://www.unicode.org/reports/tr35/tr35-personNames.html), so the cultural patterns described above are built into its data model, its formatting algorithm, and the 120 locale-specific pattern sets it ships with. The sections below map each class of problem raised in this guide to the specific mechanism the library uses to handle it.
+
+### Unicode preservation — no silent mangling
+
+Names are stored and formatted as arbitrary Unicode strings. There is no character-class validation, no length limit, no normalization that could discard combining marks. `Wałęsa`, `Björk Guðmundsdóttir`, `O'Hara`, `Ōtani`, and `宮崎駿` all round-trip through `Localize.PersonName.to_string/2` unchanged. The library's job is to arrange name parts according to locale rules — not to gatekeep what a name can contain.
+
+### Name order derived from locale data, not heuristics
+
+The library never guesses name order from character ranges or script detection. It reads the [`nameOrderLocales` data from CLDR](https://www.unicode.org/reports/tr35/tr35-personNames.html#deriving-the-name-order) for each locale, which explicitly lists which languages prefer surname-first ordering. Japanese `宮崎駿`, Chinese `李白`, Korean `김민준`, Vietnamese `Nguyễn Văn A`, and Hungarian `Bartók Béla` all format correctly because Hungarian is listed as `surnameFirst` in its own locale data, not because the library guesses from the Latin-script characters. The explicit `preferred_order` field on the struct lets an individual name override the locale default when the bearer has expressed a preference.
+
+### Tussenvoegsels and particle-aware surnames
+
+The `surname_prefix` field holds `van`, `van der`, `de`, `von`, `di`, and other particles separately from the core surname. Dutch `van Gogh` formats as `van Gogh` in display order but as `Gogh, Vincent van` in sorting order, because the Dutch locale's sorting pattern is `{surname-core}, {given} {surname-prefix}`. The same data drives correct German `von Bismarck` handling and Italian `di Caprio` handling without any locale-specific code in the application.
+
+### Double surnames (Spanish, Portuguese)
+
+The `surname` and `other_surnames` fields carry the paternal and maternal surnames separately. Spanish `Gabriel García Márquez` formats fully in formal contexts (`Gabriel García Márquez`) and with only the paternal surname in short contexts (`García`). The library's format selection algorithm picks the pattern that uses the fields that are actually populated — a customer record with only a single surname gets the single-surname pattern automatically, not a misleading double-surname display.
+
+### Patronymics
+
+Russian `Vladimir Vladimirovich Putin` uses `other_given_names` for the patronymic. Russian addressing patterns include the patronymic (the equivalent of "Mr. Putin" is usually "Vladimir Vladimirovich"), and the library's Russian addressing patterns reflect that. Icelandic `Björk Guðmundsdóttir` is modelled as `given: "Björk", surname: "Guðmundsdóttir"`, and Icelandic's own `nameOrderLocales` data drives the resulting display — the library does not impose a surname-last assumption on a culture that doesn't share it.
+
+### Monograms that avoid accidental compounds
+
+The Japanese monogram problem described above — where `不破 貞仁` produces the offensive compound `不貞` if both initials are combined — is handled by the Japanese locale's CLDR monogram patterns, which the library uses directly. A Japanese formal monogram uses only the family-name initial (`{surname-monogram}`), not a compound; a Japanese informal monogram uses only the given-name initial. `Localize.PersonName.to_string(name, usage: :monogram, locale: :ja)` produces `宮` for `宮崎駿`, not `宮駿` or `宮崎駿` or `宮宮`. The compound problem cannot occur because the library never constructs compound monograms in Japanese contexts.
+
+### Script-aware initial generation
+
+For Indic and Southeast Asian scripts, "first letter" is not "first codepoint" or "first default grapheme cluster" — it's the first extended grapheme cluster under [UAX #29](https://unicode.org/reports/tr29/). The library delegates grapheme segmentation to [`unicode_string`](https://hex.pm/packages/unicode_string), which implements the UAX #29 algorithm with Indic conjunct break handling. A Kannada name like `ಕ್ಯಾಥಿ` produces the initial `ಕ್` (Ka + virama), which is what a Kannada reader expects — not `ಕ್ಯಾ` (the full first conjunct) or `ಕ` (just the base consonant). See the [specification deviances document](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/specification_deviances.md) for the full discussion.
+
+### Native vs foreign space replacement
+
+Japanese `native_space_replacement` is empty (`宮崎駿` has no space), but `foreign_space_replacement` is `・` (the katakana middle dot, as in `アルベルト・アインシュタイン`). The library applies the correct replacement based on whether the name's language matches the formatting locale's language. A Japanese native name formats without spaces; a foreign name formatted in Japanese gets the middle dot; a foreign name formatted in English gets a normal space. The Hungarian surname-first case does *not* get the Japanese middle dot because Hungarian's `foreign_space_replacement` is a regular space, as expected.
+
+### Mononyms and missing fields
+
+Indonesian `Zendaya` (given name only) formats as `Zendaya` across all formats, usages, and formalities. The library's format selection algorithm handles single-name submissions automatically by applying the "missing surname" rule from the CLDR specification: when the name has no surname and the chosen pattern uses only the given name or an initial of it, the given name is moved into the surname slot so sorting and addressing contexts produce sensible output. Users who do not have a surname are not forced to invent one.
+
+### Length, usage, and formality are first-class
+
+The `:format`, `:usage`, and `:formality` options exist precisely because a conference-badge name ("Jo"), an email salutation ("Dear Dr. Nguyen,"), and a diploma name ("Josephine Margaret Nguyen, PhD") are different strings for the same person. The library provides the right string for each context rather than forcing callers to choose a single "display name" that's wrong in most contexts. The [MF2 integration](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/guides/message_formatting.md) makes these options available inside message templates, so a letter template can request the addressing form and a signature block can request the referring form from the same bound variable.
+
+### Opt-in locale switching for cross-script names
+
+When a Japanese formatter encounters a Latin-script name (for example a Western customer's name displayed in a Japanese UI), the CLDR specification defines an optional locale-switching step: format the name using a locale appropriate to its script, rather than forcing the formatting locale's patterns onto text that doesn't fit them. The library implements this behind the `:locale_switching` option. Default is `false` (matching the CLDR test data); set `locale_switching: true` in any `to_string/2` call to get script-aware switching.
+
+### Integration paths that fit existing code
+
+Applications rarely model people as generic `Localize.PersonName` structs — they have `%User{}`, `%Customer{}`, `%Employee{}` domain structs. The [`Localize.PersonName.Convertible` protocol](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/guides/integrating_existing_structs.md) lets a single `defimpl` block turn any existing struct into something the formatter accepts, without modifying the struct's module. This means the library can be adopted incrementally in a large codebase: add the protocol implementation, then gradually replace string concatenation with `Localize.PersonName.to_string/2` at each call site.
+
+### What the library does not do
+
+The library does not collect name data, pick honorifics, or decide whether a name is "valid". Those are product and UX decisions that the library explicitly does not take a position on. What it does is: given a correctly-collected name and a target locale, produce the string that a reader of that locale expects to see.
+
 ## Recommendations
 
 For anyone building systems that handle names:
