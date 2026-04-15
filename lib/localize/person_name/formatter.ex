@@ -566,7 +566,7 @@ defmodule Localize.PersonName.Formatter do
   defp first_grapheme(word) do
     case Unicode.String.split(word, break: :grapheme) do
       [first | _] -> first
-      [] -> word
+      {:error, _reason} -> word
     end
   end
 

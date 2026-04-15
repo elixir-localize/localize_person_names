@@ -32,7 +32,7 @@ The locale provides two sorting patterns for this combination:
 
 ```
 Pattern A: {surname} {surname2}, {given-informal}    (3 fields)
-Pattern B: {surname}, {given-informal}                (2 fields)
+Pattern B: {surname}, {given-informal}               (2 fields)
 ```
 
 Input PersonName: `given: "Käthe", surname: "Müller"` (no surname2).
