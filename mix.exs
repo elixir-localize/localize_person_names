@@ -41,9 +41,7 @@ defmodule LocalizePersonNames.MixProject do
         "mix.exs",
         "README*",
         "CHANGELOG*",
-        "LICENSE*",
-        "guides",
-        "specification_deviances.md"
+        "LICENSE*"
       ]
     ]
   end
@@ -100,7 +98,7 @@ defmodule LocalizePersonNames.MixProject do
 
   defp deps do
     [
-      {:localize, "~> 0.8"},
+      {:localize, "~> 0.13"},
       {:unicode_string, "~> 2.0"},
       {:ex_doc, "~> 0.34", optional: true, runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false}
