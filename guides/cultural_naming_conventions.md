@@ -1,6 +1,6 @@
 # Cultural naming conventions: a field guide
 
-Personal names are among the most culturally sensitive data points an application ever handles. The same sequence of characters that looks like a normal name in one country can be a legal identifier in another, an informal nickname in a third, and — as we'll see — an inadvertent drug reference or slur in a fourth. This guide surveys how people identify themselves around the world, the formality and context conventions that govern when to use which form, the concrete harm caused by getting it wrong, and the research showing how much commercial value is at stake.
+Personal names are among the most culturally sensitive data points an application ever handles. The same sequence of characters that looks like a normal name in one country can be a legal identifier in another, an informal nickname in a third, and an inadvertent drug reference or slur in a fourth. This guide surveys how people identify themselves around the world, the formality and context conventions that govern when to use which form, the concrete harm caused by getting it wrong, and the research showing how much commercial value is at stake.
 
 The goal is to help developers, product managers, and designers understand the underlying cultural landscape their systems operate in, and to make informed decisions about how to collect, store, and display names. The technical mechanisms for doing this correctly are in the [CLDR Person Names specification](https://www.unicode.org/reports/tr35/tr35-personNames.html) and in `Localize.PersonName.to_string/2` — this guide is the "why" that the code's "how" serves.
 
@@ -26,9 +26,9 @@ CLDR groups the world's naming practices into a small number of structural patte
 
 The most visible divide is the order of the given name and the surname.
 
-* **Given-first** cultures place the given name before the surname. English `John Smith`, French `Marie Dupont`, German `Johann Bach`, and most European-language conventions follow this pattern. In business correspondence, the given name is frequently dropped in favour of the title and surname ("Dr. Smith").
+* *Given-first* cultures place the given name before the surname. English `John Smith`, French `Marie Dupont`, German `Johann Bach`, and most European-language conventions follow this pattern. In business correspondence, the given name is frequently dropped in favour of the title and surname ("Dr. Smith").
 
-* **Surname-first** cultures place the family name first. Chinese `毛泽东` (Mao Zedong — family name Mao, given name Zedong), Japanese `宮崎駿` (Miyazaki Hayao — family name Miyazaki, given name Hayao), Korean `김민준` (Kim Min-jun — family name Kim, given name Min-jun), Vietnamese `Nguyễn Văn A` (family name Nguyễn first), and Hungarian `Bartók Béla` (family name Bartók first, uniquely among European languages) all follow this pattern.
+* *Surname-first* cultures place the family name first. Chinese `毛泽东` (Mao Zedong — family name Mao, given name Zedong), Japanese `宮崎駿` (Miyazaki Hayao — family name Miyazaki, given name Hayao), Korean `김민준` (Kim Min-jun — family name Kim, given name Min-jun), Vietnamese `Nguyễn Văn A` (family name Nguyễn first), and Hungarian `Bartók Béla` (family name Bartók first, uniquely among European languages) all follow this pattern.
 
 When a Japanese person's name appears in English text, Western journalism has historically reversed the order to "Hayao Miyazaki" — but Japanese government guidance since 2020 has encouraged English-language publications to preserve surname-first order, and the Japanese Ministry of Foreign Affairs now writes its ministers' names in family-name-first order even in English. Many systems still reverse the order automatically; this is no longer considered correct.
 
@@ -68,19 +68,19 @@ Names don't appear in a single form. The same person has a cluster of legitimate
 
 ### Usage
 
-* **Addressing** — speaking *to* someone. "Dear Dr. Smith,". The vocative case. Titles dominate; given names are often omitted in formal contexts.
+* *Addressing* — speaking *to* someone. "Dear Dr. Smith,". The vocative case. Titles dominate; given names are often omitted in formal contexts.
 
-* **Referring** — speaking *about* someone. "Dr. Smith has approved the report." The nominative case. Formal references include the full name; informal references may use just the given name.
+* *Referring* — speaking *about* someone. "Dr. Smith has approved the report." The nominative case. Formal references include the full name; informal references may use just the given name.
 
-* **Monogram** — an abbreviated identifier, typically for avatars. A Western "Robert John Smith" monogram might be "RJS"; a Japanese "宮崎駿" monogram might be "宮" (just the family name's first character). A Kannada name's monogram is an akshara, not a Unicode codepoint.
+* *Monogram* — an abbreviated identifier, typically for avatars. A Western "Robert John Smith" monogram might be "RJS"; a Japanese "宮崎駿" monogram might be "宮" (just the family name's first character). A Kannada name's monogram is an akshara, not a Unicode codepoint.
 
 These three contexts have different rules. A letter addressed "Dear Mr. Smith," but signed by "Mr. Smith" reads as comical because the signatory should refer to themselves (referring usage) while addressing the recipient (addressing usage). Software that uses the same name string for both contexts produces this error constantly.
 
 ### Formality
 
-* **Formal** — full titles, credentials, generation markers. `Prof. Dr. Ada Cornelia von Brühl Jr., MD DDS`.
+* *Formal* — full titles, credentials, generation markers. `Prof. Dr. Ada Cornelia von Brühl Jr., MD DDS`.
 
-* **Informal** — nicknames where the locale's data provides them; no titles; often just the given name or a short form. `Neele`, `Bob`, `Хасан`.
+* *Informal* — nicknames where the locale's data provides them; no titles; often just the given name or a short form. `Neele`, `Bob`, `Хасан`.
 
 Informal forms are locale-specific and often data-driven — the CLDR specification notes that informal forms cannot safely be *derived* (Beth/Betsy/Bette/Liz all derive from Elizabeth, and choosing one is a personal decision), only stored as an explicit field the user provides.
 
@@ -128,13 +128,13 @@ In the European Union, the General Data Protection Regulation treats names as pe
 
 Getting names right is not only a courtesy — it's a measurable commercial lever.
 
-* **Personalized experiences drive purchase behaviour.** Epsilon's [Power of Me research](https://www.businesswire.com/news/home/20210914005231/en/80-of-Consumers-More-Likely-to-Shop-with-Brands-that-Show-they-Understand-Them) found that **80% of consumers are more likely to purchase from a brand that provides personalized experiences**, and 90% find personalization appealing.
+* *Personalized experiences drive purchase behaviour.* Epsilon's [Power of Me research](https://www.businesswire.com/news/home/20210914005231/en/80-of-Consumers-More-Likely-to-Shop-with-Brands-that-Show-they-Understand-Them) found that **80% of consumers are more likely to purchase from a brand that provides personalized experiences**, and 90% find personalization appealing.
 
-* **Mishandled personalization creates frustration.** McKinsey's research ["The value of getting personalization right — or wrong — is multiplying"](https://www.mckinsey.com/capabilities/growth-marketing-and-sales/our-insights/the-value-of-getting-personalization-right-or-wrong-is-multiplying) found that **71% of consumers expect companies to deliver personalized interactions, and 76% get frustrated when this doesn't happen**. McKinsey concluded that companies that grow faster drive 40% more of their revenue from personalization than slower-growing peers.
+* *Mishandled personalization creates frustration.* McKinsey's research ["The value of getting personalization right — or wrong — is multiplying"](https://www.mckinsey.com/capabilities/growth-marketing-and-sales/our-insights/the-value-of-getting-personalization-right-or-wrong-is-multiplying) found that **71% of consumers expect companies to deliver personalized interactions, and 76% get frustrated when this doesn't happen**. McKinsey concluded that companies that grow faster drive 40% more of their revenue from personalization than slower-growing peers.
 
-* **Personalization materially affects retention.** Salesforce's Connected Customer research ([Personalization, Data Security, and Speed Drive Customer Loyalty](https://www.salesforce.com/news/stories/customer-spending/)) identified personalization as one of the top three drivers of customer loyalty, alongside data security and service speed, with particular importance during periods of economic uncertainty when consumers actively reassess where they spend.
+* *Personalization materially affects retention.* Salesforce's Connected Customer research ([Personalization, Data Security, and Speed Drive Customer Loyalty](https://www.salesforce.com/news/stories/customer-spending/)) identified personalization as one of the top three drivers of customer loyalty, alongside data security and service speed, with particular importance during periods of economic uncertainty when consumers actively reassess where they spend.
 
-* **Retail buyers name personalization as a retention driver.** McKinsey's retail-sector research ([Personalizing the customer experience: Driving differentiation in retail](https://www.mckinsey.com/industries/retail/our-insights/personalizing-the-customer-experience-driving-differentiation-in-retail)) found that 53% of retailers surveyed said personalization benefits included increased customer loyalty and retention.
+* *Retail buyers name personalization as a retention driver.* McKinsey's retail-sector research ([Personalizing the customer experience: Driving differentiation in retail](https://www.mckinsey.com/industries/retail/our-insights/personalizing-the-customer-experience-driving-differentiation-in-retail)) found that 53% of retailers surveyed said personalization benefits included increased customer loyalty and retention.
 
 Names are the most personal of personalizations. Getting someone's name wrong in an email salutation is a worse experience than not sending the email at all, because it tells the recipient that the sender has their data but can't be bothered to use it correctly. A single incident is tolerable; a pattern of wrong-name emails from the same brand produces churn. Epsilon's data says 80% of consumers weigh personalization in their purchase decisions; McKinsey's data says 76% are frustrated when personalization fails; the product teams of any company sending more than a few thousand emails a month are running a name-handling quality gate whether they realise it or not.
 
@@ -198,19 +198,19 @@ The library does not collect name data, pick honorifics, or decide whether a nam
 
 For anyone building systems that handle names:
 
-* **Store names as the user provides them.** Do not strip diacritics, lowercase, reorder, or split into given/family unless the user explicitly provides the split. Preserve the exact Unicode sequence, including punctuation and combining marks.
+* *Store names as the user provides them.* Do not strip diacritics, lowercase, reorder, or split into given/family unless the user explicitly provides the split. Preserve the exact Unicode sequence, including punctuation and combining marks.
 
-* **Allow single-name submissions.** Make the surname field optional at the schema level. Handle mononyms in display logic by using the given name in place of the surname when necessary (the CLDR spec does this automatically).
+* *Allow single-name submissions.* Make the surname field optional at the schema level. Handle mononyms in display logic by using the given name in place of the surname when necessary (the CLDR spec does this automatically).
 
-* **Use locale-aware formatting libraries rather than string concatenation.** `"#{first_name} #{last_name}"` is wrong for at least half the world. A library like this one (or ICU's `PersonName` API) handles order, spacing, and script-specific rules.
+* *Use locale-aware formatting libraries rather than string concatenation.* `"#{first_name} #{last_name}"` is wrong for at least half the world. A library like this one (or ICU's `PersonName` API) handles order, spacing, and script-specific rules.
 
-* **Ask for the form needed for the context.** A registration form can ask for legal name, preferred name, and display name as separate fields, and let the user decide which to use where. The Salesforce and Slack approaches to "display name" versus "legal name" are good baselines.
+* *Ask for the form needed for the context.* A registration form can ask for legal name, preferred name, and display name as separate fields, and let the user decide which to use where. The Salesforce and Slack approaches to "display name" versus "legal name" are good baselines.
 
-* **Test with names from the cultures you serve.** Staff from the target culture should review how the system renders example names before launch. A naming bug that ships to production is more expensive than one caught in QA, and a naming bug that ships to a specific culture signals that the company does not value users from that culture.
+* *Test with names from the cultures you serve.* Staff from the target culture should review how the system renders example names before launch. A naming bug that ships to production is more expensive than one caught in QA, and a naming bug that ships to a specific culture signals that the company does not value users from that culture.
 
-* **Never guess at gender or honorifics from a name.** Ask, and let the user skip the question. Default to no honorific rather than a wrong one.
+* *Never guess at gender or honorifics from a name.* Ask, and let the user skip the question. Default to no honorific rather than a wrong one.
 
-* **Document the scope of your name handling.** If you only support Latin-alphabet names up to 50 characters, say so up front so users can make informed decisions. Silent truncation and silent transliteration are worse than an honest limitation.
+* *Document the scope of your name handling.* If you only support Latin-alphabet names up to 50 characters, say so up front so users can make informed decisions. Silent truncation and silent transliteration are worse than an honest limitation.
 
 ## Further reading
 
@@ -227,10 +227,11 @@ For anyone building systems that handle names:
 * [Personalization, Data Security, and Speed Drive Customer Loyalty](https://www.salesforce.com/news/stories/customer-spending/) — Salesforce's State of the Connected Customer research.
 
 Sources:
-- [Unicode TR35 Person Names](https://www.unicode.org/reports/tr35/tr35-personNames.html)
-- [Falsehoods Programmers Believe About Names](https://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/)
-- [多文化環境におけるパーソナルネームの扱い方](https://zenn.dev/blue_jam/articles/5553aec104e710)
-- [Epsilon: 80% of Consumers More Likely to Shop with Brands that Show they Understand Them](https://www.businesswire.com/news/home/20210914005231/en/80-of-Consumers-More-Likely-to-Shop-with-Brands-that-Show-they-Understand-Them)
-- [McKinsey: The value of getting personalization right — or wrong — is multiplying](https://www.mckinsey.com/capabilities/growth-marketing-and-sales/our-insights/the-value-of-getting-personalization-right-or-wrong-is-multiplying)
-- [McKinsey: Personalizing the customer experience in retail](https://www.mckinsey.com/industries/retail/our-insights/personalizing-the-customer-experience-driving-differentiation-in-retail)
-- [Salesforce: Personalization, Data Security, and Speed Drive Customer Loyalty](https://www.salesforce.com/news/stories/customer-spending/)
+
+* [Unicode TR35 Person Names](https://www.unicode.org/reports/tr35/tr35-personNames.html)
+* [Falsehoods Programmers Believe About Names](https://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/)
+* [多文化環境におけるパーソナルネームの扱い方](https://zenn.dev/blue_jam/articles/5553aec104e710)
+* [Epsilon: 80% of Consumers More Likely to Shop with Brands that Show they Understand Them](https://www.businesswire.com/news/home/20210914005231/en/80-of-Consumers-More-Likely-to-Shop-with-Brands-that-Show-they-Understand-Them)
+* [McKinsey: The value of getting personalization right — or wrong — is multiplying](https://www.mckinsey.com/capabilities/growth-marketing-and-sales/our-insights/the-value-of-getting-personalization-right-or-wrong-is-multiplying)
+* [McKinsey: Personalizing the customer experience in retail](https://www.mckinsey.com/industries/retail/our-insights/personalizing-the-customer-experience-driving-differentiation-in-retail)
+* [Salesforce: Personalization, Data Security, and Speed Drive Customer Loyalty](https://www.salesforce.com/news/stories/customer-spending/)
