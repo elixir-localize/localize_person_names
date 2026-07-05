@@ -50,15 +50,15 @@ defmodule LocalizePersonNames.MixProject do
     %{
       "GitHub" => "https://github.com/elixir-localize/localize_person_names",
       "Readme" =>
-        "https://github.com/elixir-localize/localize_person_names/blob/v#{@version}/README.md",
+        "https://github.com/elixir-localize/localize_person_names/blob/main/README.md",
       "Changelog" =>
-        "https://github.com/elixir-localize/localize_person_names/blob/v#{@version}/CHANGELOG.md"
+        "https://github.com/elixir-localize/localize_person_names/blob/main/CHANGELOG.md"
     }
   end
 
   defp docs do
     [
-      source_ref: "v#{@version}",
+      source_ref: "main",
       main: "readme",
       extras:
         [

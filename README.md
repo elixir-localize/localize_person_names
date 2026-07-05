@@ -61,17 +61,17 @@ Localize.PersonName.to_string(name, locale: :ja)
 
 ## Integrating existing structs
 
-Any struct can participate in person name formatting, either through the `Localize.PersonName.Convertible` protocol or through the `Localize.PersonName` behaviour. See [Integrating existing name structs](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/guides/integrating_existing_structs.md) for the full comparison and recommendations.
+Any struct can participate in person name formatting, either through the `Localize.PersonName.Convertible` protocol or through the `Localize.PersonName` behaviour. See [Integrating existing name structs](https://github.com/elixir-localize/localize_person_names/blob/main/guides/integrating_existing_structs.md) for the full comparison and recommendations.
 
 ## MF2 message formatting
 
-A `:personName` MF2 function is provided as `Localize.PersonName.MF2` for use with [Localize.Message](https://hexdocs.pm/localize/Localize.Message.html). See [Using Localize.PersonName with Localize.Message](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/guides/message_formatting.md) for formal and informal worked examples.
+A `:personName` MF2 function is provided as `Localize.PersonName.MF2` for use with [Localize.Message](https://hexdocs.pm/localize/Localize.Message.html). See [Using Localize.PersonName with Localize.Message](https://github.com/elixir-localize/localize_person_names/blob/main/guides/message_formatting.md) for formal and informal worked examples.
 
 ## Guides
 
-* [Integrating existing name structs](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/guides/integrating_existing_structs.md) — two ways to wire existing domain structs (`%User{}`, `%Customer{}`, etc.) into the formatter: the `Localize.PersonName.Convertible` protocol (recommended) and the `Localize.PersonName` behaviour.
+* [Integrating existing name structs](https://github.com/elixir-localize/localize_person_names/blob/main/guides/integrating_existing_structs.md) — two ways to wire existing domain structs (`%User{}`, `%Customer{}`, etc.) into the formatter: the `Localize.PersonName.Convertible` protocol (recommended) and the `Localize.PersonName` behaviour.
 
-* [Using Localize.PersonName with Localize.Message](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/guides/message_formatting.md) — integrating person name formatting into MF2 message templates via a custom function, with formal and informal worked examples.
+* [Using Localize.PersonName with Localize.Message](https://github.com/elixir-localize/localize_person_names/blob/main/guides/message_formatting.md) — integrating person name formatting into MF2 message templates via a custom function, with formal and informal worked examples.
 
 ## Conformance
 
@@ -81,7 +81,7 @@ A `:personName` MF2 function is provided as `Localize.PersonName.MF2` for use wi
 
 ### Locale coverage
 
-Of the 128 CLDR locale test data files available, 120 pass all tests. The 8 excluded locales and their reasons are documented in `specification_deviances.md` and summarised below:
+Of the 128 CLDR locale test data files available, 120 pass all tests. The 8 excluded locales and their reasons are documented in the conformance guide and summarised below:
 
 | Locales | Failures | Cause |
 |---------|----------|-------|
@@ -91,7 +91,7 @@ Of the 128 CLDR locale test data files available, 120 pass all tests. The 8 excl
 
 ### Specification deviances
 
-See [specification_deviances.md](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/specification_deviances.md) for detailed analysis of four issues:
+See [CLDR Specification Conformance](https://github.com/elixir-localize/localize_person_names/blob/main/guides/conformance.md) for detailed analysis of four issues:
 
 1. **Format selection tiebreaker** (es_US, es_MX, es_419) — Spec says "fewest unpopulated fields" but test data expects different selection.
 
@@ -103,4 +103,4 @@ See [specification_deviances.md](https://github.com/elixir-localize/localize_per
 
 ## Known Limitations
 
-See [TODO.md](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/TODO.md) for tracked implementation gaps.
+See [TODO.md](https://github.com/elixir-localize/localize_person_names/blob/main/TODO.md) for tracked implementation gaps.
