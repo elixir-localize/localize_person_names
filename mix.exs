@@ -16,7 +16,16 @@ defmodule LocalizePersonNames.MixProject do
       description: description(),
       package: package(),
       docs: docs(),
-      dialyzer: [ignore_warnings: ".dialyzer_ignore_warnings"]
+      dialyzer: [
+        ignore_warnings: ".dialyzer_ignore_warnings",
+        flags: [
+          :error_handling,
+          :unknown,
+          :underspecs,
+          :extra_return,
+          :missing_return
+        ]
+      ]
     ]
   end
 
@@ -98,9 +107,11 @@ defmodule LocalizePersonNames.MixProject do
 
   defp deps do
     [
-      {:localize, "~> 0.13"},
+      {:localize, "~> 1.0-rc"},
       {:unicode_string, "~> 2.0"},
+      {:ecto, "~> 3.12", optional: true},
       {:ex_doc, "~> 0.34", optional: true, runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false}
     ] ++ maybe_json_polyfill()
   end

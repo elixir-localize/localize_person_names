@@ -646,22 +646,25 @@ defmodule Localize.PersonName.Formatter do
   #     likely locale for und + name script + name region."
   @doc false
   def derive_formatting_locale(_name, formatting_locale, name_locale) do
-    if considered_the_same_script?(formatting_locale.script, name_locale.script) do
-      {:ok, formatting_locale}
-    else
-      name_cldr_id = Localize.Locale.to_locale_id(name_locale)
+    cond do
+      considered_the_same_script?(formatting_locale.script, name_locale.script) ->
+        {:ok, formatting_locale}
 
-      if Localize.PersonName.FormatParser.has_formatting_data?(name_cldr_id) do
+      Localize.PersonName.FormatParser.has_formatting_data?(name_locale) ->
         {:ok, name_locale}
-      else
-        name_script = name_locale.script
 
-        case find_likely_locale(name_script, name_locale.territory) do
-          {:ok, nil} -> {:ok, formatting_locale}
-          {:ok, candidate} -> {:ok, candidate}
-          {:error, _} -> {:ok, formatting_locale}
-        end
-      end
+      true ->
+        maximal_likely_locale(name_locale, formatting_locale)
+    end
+  end
+
+  # The maximal likely locale for und + the name's script and region,
+  # falling back to the formatting locale when there is no candidate.
+  defp maximal_likely_locale(name_locale, formatting_locale) do
+    case find_likely_locale(name_locale.script, name_locale.territory) do
+      {:ok, nil} -> {:ok, formatting_locale}
+      {:ok, candidate} -> {:ok, candidate}
+      {:error, _reason} -> {:ok, formatting_locale}
     end
   end
 

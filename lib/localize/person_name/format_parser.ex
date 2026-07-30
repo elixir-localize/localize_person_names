@@ -122,31 +122,32 @@ defmodule Localize.PersonName.FormatParser do
   # Parse the nested person_name format structure:
   # order -> length -> usage -> formality -> [format_strings]
   defp parse_person_name_formats(person_name) do
-    Map.new(person_name, fn {order, lengths} ->
-      parsed_lengths =
-        Map.new(lengths, fn {length, usages} ->
-          parsed_usages =
-            Map.new(usages, fn {usage, formalities} ->
-              parsed_formalities =
-                Map.new(formalities, fn {formality_key, format_strings} ->
-                  parsed_formats =
-                    format_strings
-                    |> Enum.sort()
-                    |> Enum.map(&parse_format_string/1)
-                    |> Enum.with_index()
-                    |> Enum.map(fn {format, index} -> {index, format} end)
+    Map.new(person_name, fn {order, lengths} -> {order, parse_lengths(lengths)} end)
+  end
 
-                  {formality_key, parsed_formats}
-                end)
+  # The format data nests four levels deep — order, length, usage,
+  # formality — with the formats themselves at the leaves. One function
+  # per level keeps each one readable.
+  defp parse_lengths(lengths) do
+    Map.new(lengths, fn {length, usages} -> {length, parse_usages(usages)} end)
+  end
 
-              {usage, parsed_formalities}
-            end)
+  defp parse_usages(usages) do
+    Map.new(usages, fn {usage, formalities} -> {usage, parse_formalities(formalities)} end)
+  end
 
-          {length, parsed_usages}
-        end)
-
-      {order, parsed_lengths}
+  defp parse_formalities(formalities) do
+    Map.new(formalities, fn {formality_key, format_strings} ->
+      {formality_key, parse_formats(format_strings)}
     end)
+  end
+
+  defp parse_formats(format_strings) do
+    format_strings
+    |> Enum.sort()
+    |> Enum.map(&parse_format_string/1)
+    |> Enum.with_index()
+    |> Enum.map(fn {format, index} -> {index, format} end)
   end
 
   defp parse_format_string(format) when is_binary(format) do

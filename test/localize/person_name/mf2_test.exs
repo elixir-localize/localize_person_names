@@ -74,14 +74,14 @@ defmodule Localize.PersonName.MF2Test do
     test "non-struct operand returns an error" do
       {:ok, parsed} = Localize.Message.Parser.parse("{$name :personName}")
 
-      assert {:format_error, reason} =
+      assert {:format_error, {:formatter_failed, message}} =
                Localize.Message.Interpreter.format_list(
                  parsed,
                  %{"name" => "not a struct"},
                  functions: @functions
                )
 
-      assert reason =~ "requires a PersonName struct"
+      assert message =~ "requires a PersonName struct"
     end
   end
 end

@@ -469,6 +469,7 @@ defmodule Localize.PersonName do
       |> cast_to_person_name()
       |> Formatter.wrap(:ok)
     else
+      # credo:disable-for-next-line Credo.Check.Refactor.Apply
       apply(Localize.PersonName.Convertible, :to_person_name, [name])
       |> Formatter.wrap(:ok)
     end
@@ -538,6 +539,7 @@ defmodule Localize.PersonName do
     end
   end
 
+  @spec raise_error(error_message()) :: no_return()
   defp raise_error(reason) when is_binary(reason) do
     raise Localize.PersonNameError, reason
   end
