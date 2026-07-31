@@ -1,7 +1,7 @@
 defmodule LocalizePersonNames.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "1.0.0"
 
   def project do
     [
@@ -107,7 +107,7 @@ defmodule LocalizePersonNames.MixProject do
 
   defp deps do
     [
-      {:localize, "~> 1.0-rc"},
+      {:localize, "~> 1.0"},
       {:unicode_string, "~> 2.0"},
       {:ecto, "~> 3.12", optional: true},
       {:ex_doc, "~> 0.34", optional: true, runtime: false},
