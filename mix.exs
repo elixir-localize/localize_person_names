@@ -49,6 +49,7 @@ defmodule LocalizePersonNames.MixProject do
         "lib",
         "mix.exs",
         "README*",
+        "usage-rules.md",
         "CHANGELOG*",
         "LICENSE*"
       ]
