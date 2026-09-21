@@ -23,3 +23,5 @@ erl_crash.dump
 localize_person_names-*.tar
 
 .DS_Store
+# Per-session working context for Claude Code; never committed
+CLAUDE.local.md
