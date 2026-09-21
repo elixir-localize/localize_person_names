@@ -3,7 +3,7 @@
 **Status:** reference, 2026-09-21
 
 How the three subtler parts of the CLDR person-name specification are
-implemented, and why four locales are excluded from the conformance suite.
+implemented, and why one locale is excluded from the conformance suite.
 The tracked work is in [TODO.md](../TODO.md).
 
 ## Formatting locale switching
@@ -67,34 +67,30 @@ handled implicitly by the data model.
 
 ## Excluded locales
 
-### Word-break segmentation (si, my, km, ml)
+The conformance suite mirrors CLDR's `common/testData/personNameTest`
+directory exactly. As of the CLDR 49 alpha2 data one locale is excluded.
 
-61 failures across 4 locales caused by word-break segmentation differences
-between `unicode_string` and ICU for transliterated foreign names in Sinhala,
-Myanmar, Khmer, and Malayalam scripts. The dictionary break algorithm works
-correctly for native-language words, but transliterated names (e.g., "Hamish"
-in Myanmar script) split at syllable boundaries instead of word boundaries.
+### Word-break segmentation (my)
+
+One failure (`my.txt` line 756, givenFirst/short/referring/informal) where
+`unicode_string`'s dictionary word break splits the transliterated Myanmar
+given name `အာဒါ ကွန်နီလီယာ` into six words where ICU finds two, so the short
+format produces extra initials.
 
 To fix: improve dictionary coverage in `unicode_string` for transliterated
 loanwords, or add heuristics for non-dictionary character sequences in the
 dictionary break algorithm.
 
-### Test data mismatch (yo_BJ)
+### Previously excluded
 
-27 failures where the test data expects initials but the locale format data
-has no `-initial` modifier. The parent locale `yo` has identical format
-patterns and its test data correctly expects full names.
+* `si`, `km`, `ml` were excluded as word-break failures. They were not: the
+  initial filter required every character after the first to be a letter,
+  punctuation or extend character, which dropped Sinhala words carrying a
+  zero-width joiner and the Malayalam sample name containing a digit
+  homoglyph. Aligning the filter with CLDR's reference formatter (a word takes
+  an initial when its first code point is a letter) fixed all three.
 
-To fix: report upstream to CLDR. Either the test data needs updating to match
-the current format patterns, or the format patterns need `-initial` modifiers
-added.
-
-### Format selection tiebreaker (es_US, es_MX, es_419)
-
-28 failures where the spec's format selection algorithm produces a different
-result than the CLDR test data expects. Documented in detail in
-`specification_deviances.md`.
-
-To fix: report upstream to CLDR. Either the spec text needs to describe the
-actual ICU tiebreaker logic, or the test data needs to match the spec's
-algorithm.
+* `yo_BJ`, `es_US`, `es_MX`, `es_419` were regional test files CLDR retired
+  in CLDR 45. This repository carried stale 2023 copies until the CLDR 49
+  update. The analysis stays in
+  [guides/conformance.md](../guides/conformance.md) as history.

@@ -77,29 +77,27 @@ A `:personName` MF2 function is provided as `Localize.PersonName.MF2` for use wi
 
 ### Test coverage
 
-39,731 tests across 120 CLDR locales, 0 failures. Test data is from the CLDR person name test suite, which provides format conformance tests for each locale covering all combinations of order, length, usage, and formality.
+36,960 tests across 110 CLDR locales, 0 failures. Test data is from the CLDR person name test suite, which provides format conformance tests for each locale covering all combinations of order, length, usage, and formality.
 
 ### Locale coverage
 
-Of the 128 CLDR locale test data files available, 120 pass all tests. The 8 excluded locales and their reasons are documented in the [CLDR Specification Conformance](https://github.com/elixir-localize/localize_person_names/blob/v1.0.0/guides/conformance.md) guide and summarised below:
+The test data mirrors CLDR's `common/testData/personNameTest` directory exactly: 111 locale files as of CLDR 49 alpha2. 110 pass all tests. The one excluded locale is documented in the [CLDR Specification Conformance](https://github.com/elixir-localize/localize_person_names/blob/v1.0.0/guides/conformance.md) guide and summarised below:
 
-| Locales | Failures | Cause |
-|---------|----------|-------|
-| si, my, km, ml | 61 | Word-break segmentation differences for transliterated foreign names in these scripts. |
-| yo_BJ | 27 | CLDR test data expects initials but locale format data has no `-initial` modifier. |
-| es_US, es_MX, es_419 | 28 | Format selection tiebreaker discrepancy between spec text and CLDR test data. |
+| Locale | Failures | Cause |
+|--------|----------|-------|
+| my | 1 | Word-break segmentation splits a transliterated Myanmar given name into six words where ICU finds two. |
 
 ### Specification deviances
 
-See [CLDR Specification Conformance](https://github.com/elixir-localize/localize_person_names/blob/v1.0.0/guides/conformance.md) for detailed analysis of four issues:
+See [CLDR Specification Conformance](https://github.com/elixir-localize/localize_person_names/blob/v1.0.0/guides/conformance.md) for detailed analysis of these issues:
 
-1. **Format selection tiebreaker** (es_US, es_MX, es_419) — Spec says "fewest unpopulated fields" but test data expects different selection.
+1. **Empty field removal with grouping punctuation** (cs, sk) — Fixed in this implementation by detecting parentheses/brackets during literal coalescing.
 
-2. **Empty field removal with grouping punctuation** (cs, sk) — Fixed in this implementation by detecting parentheses/brackets during literal coalescing.
+2. **Initial derivation requires UAX #29 grapheme clusters** — Spec says "first grapheme cluster" without specifying UAX #29. This implementation uses UAX #29 extended grapheme clusters via `unicode_string`, which is required for correct initials in Brahmic scripts.
 
-3. **Initial derivation requires UAX #29 grapheme clusters** — Spec says "first grapheme cluster" without specifying UAX #29. This implementation uses UAX #29 extended grapheme clusters via `unicode_string`, which is required for correct initials in Brahmic scripts.
+3. **Malayalam sample names contain a digit homoglyph** (ml) — CLDR 49 spells a sample name with U+0D6A digit four where the chillu U+0D7C is meant. Harmless here since initials follow the reference formatter's rule, but worth an upstream fix.
 
-4. **Test data / locale data mismatch** (yo_BJ) — Test expectations don't match the current format patterns.
+4. **Format selection tiebreaker** and **yo_BJ test data mismatch** — Historical. Both concerned regional test files CLDR retired in CLDR 45; the analysis is kept in the guide.
 
 ## Known Limitations
 

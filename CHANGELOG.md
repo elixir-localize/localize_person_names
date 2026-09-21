@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file. This projec
 
 ## [Unreleased]
 
+### Changed
+
+* Conformance test data is CLDR 49 alpha2 and mirrors `common/testData/personNameTest` exactly: sixteen regional files CLDR retired in CLDR 45 are removed and `br` is added. Only `my` is excluded now, for one word-break failure.
+
 ### Fixed
+
+* Initial generation takes a word's initial whenever its first code point is a letter, as CLDR's reference formatter does. Sinhala words with a zero-width joiner and Malayalam words containing a digit were dropped, which is why `si`, `km` and `ml` were excluded.
 
 * Dead documentation links: the README and the cultural naming conventions guide pointed at a `v0.1.0` tag that was never published and at `specification_deviances.md`, which became `guides/conformance.md`. Closes [#1](https://github.com/elixir-localize/localize_person_names/issues/1).
 

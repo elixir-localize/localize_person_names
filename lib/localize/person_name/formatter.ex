@@ -514,11 +514,15 @@ defmodule Localize.PersonName.Formatter do
     |> :erlang.iolist_to_binary()
   end
 
-  # Starts with a letter, then letter or punctuation or a extended character
-  @word_or_punctuation Unicode.Regex.compile!("^\\p{L}[\\p{L}\\p{P}\\p{word_break=extend}]*$")
+  # A word takes an initial when it starts with a letter, whatever follows.
+  # This matches CLDR's reference formatter (Character.isLetter on the first
+  # code point), which generated the conformance data. Requiring the rest of the
+  # word to be letters or punctuation dropped Sinhala words that carry a
+  # zero-width joiner and Malayalam words containing a digit homoglyph.
+  @starts_with_letter Unicode.Regex.compile!("^\\p{L}")
 
   defp initialize_word(word, locale, initial_template, acc, false = _retain_punctuation?) do
-    if Unicode.Regex.match?(@word_or_punctuation, word) do
+    if Unicode.Regex.match?(@starts_with_letter, word) do
       add_initial(word, locale, initial_template, acc)
     else
       acc
@@ -526,7 +530,7 @@ defmodule Localize.PersonName.Formatter do
   end
 
   defp initialize_word(word, locale, initial_template, acc, true = _retain_punctuation?) do
-    if Unicode.Regex.match?(@word_or_punctuation, word) do
+    if Unicode.Regex.match?(@starts_with_letter, word) do
       add_initial(word, locale, initial_template, acc)
     else
       add_to_list(word, acc)

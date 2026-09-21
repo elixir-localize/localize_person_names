@@ -1,18 +1,18 @@
 # CLDR Specification Conformance
 
-THe implementation fully meets the [TR35-8 PersonNames](https://www.unicode.org/reports/tr35/tr35-personNames.html) specification but there are some differences in test results for a few locales.
+The implementation fully meets the [TR35-8 PersonNames](https://www.unicode.org/reports/tr35/tr35-personNames.html) specification but there are some differences in test results for a few locales.
 
 This document describes cases where the CLDR person name test data produces results that are inconsistent with the specification text in [TR35-8 PersonNames](https://www.unicode.org/reports/tr35/tr35-personNames.html). These are filed as potential specification or test data bugs.
 
-## 1. Format Selection Tiebreaker Inconsistency (es_US, es_MX, es_419)
+## 1. Format Selection Tiebreaker Inconsistency (es_US, es_MX, es_419) — retired test data
 
-### Affected locales
+### Status
 
-`es_US`, `es_MX`, `es_419`
+Historical. CLDR removed the regional test files (`es_US.txt`, `es_MX.txt`, `es_419.txt` and thirteen others) from `common/testData/personNameTest` in CLDR 45, and this library's conformance suite has mirrored the CLDR directory exactly since it moved to the CLDR 49 data. The 28 failures described here were against 2023-vintage copies of those files generated from older locale data, and no current CLDR test data exercises the discrepancy. The analysis is kept because the question about the spec's tiebreaker wording is still open.
 
 ### Summary
 
-When two namePatterns have equal numbers of populated fields, the spec says to select the pattern with the fewest unpopulated fields. The CLDR test data expects the pattern with MORE unpopulated fields to be selected in certain cases, contradicting the spec.
+When two namePatterns have equal numbers of populated fields, the spec says to select the pattern with the fewest unpopulated fields. The retired test data expected the pattern with MORE unpopulated fields to be selected in certain cases, contradicting the spec.
 
 ### Specification text
 
@@ -246,7 +246,11 @@ The phrase "first grapheme cluster" in the initial derivation section should be 
 * `km.txt` line 444: initial for `ហ្សាសាស្តូ` → expected `ហ្សា.`
 * `ml.txt` line 440: initial for `സ്‌റ്റോബർ` → expected `സ്‌.`
 
-## 4. Test Data / Locale Data Mismatch for yo_BJ (Yoruba-Benin)
+## 4. Test Data / Locale Data Mismatch for yo_BJ (Yoruba-Benin) — retired test data
+
+### Status
+
+Historical. `yo_BJ.txt` was one of the regional test files CLDR dropped in CLDR 45. The 27 failures described here were against a stale copy of that file; the current CLDR 49 `yo.txt` passes in full. The section is kept as a record of why the file disagreed with the locale data.
 
 ### Affected locales
 
@@ -297,3 +301,21 @@ This affects 27 test cases in `yo_BJ.txt`, all involving `short/referring` or `m
 * `yo_BJ.txt` line 152: `parameters; givenFirst; short; referring; formal` → expected `"O. Adeboye"`, actual `"Olabisi Adeboye"`
 * `yo_BJ.txt` line 252: `parameters; sorting; short; referring; formal` → expected `"Akintola, A. A."`, actual `"Akintola, Adeolu Adegboyega"`
 * Compare `yo.txt` line 143: `parameters; givenFirst; short; referring; formal` → expected `"Olabisi Adeboye"` (full name, matches format data)
+
+## 5. Malayalam Sample Names Contain a Digit Homoglyph
+
+### Affected locales
+
+`ml`
+
+### Summary
+
+The `ml` sample names in CLDR 49 spell the given2 field `സീസ൪ മാ൪ട്ടിൻ` with U+0D6A MALAYALAM DIGIT FOUR (`൪`) where the chillu letter U+0D7C (`ർ`) is intended; the two glyphs look alike. The same text appears in `common/main/ml.xml` and in the generated `ml.txt` expectations.
+
+### Effect on this implementation
+
+None since the initial filter was aligned with CLDR's reference formatter. A word takes an initial when its first code point is a letter, whatever follows, so `സീസ൪` yields `സീ.` as the test data expects. An earlier version required every following character to be a letter, punctuation or extend character, which silently dropped the word.
+
+### Suggested upstream fix
+
+Replace U+0D6A with U+0D7C in the `ml` sample names in `common/main/ml.xml` and regenerate `ml.txt`.
