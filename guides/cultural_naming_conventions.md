@@ -168,7 +168,7 @@ The Japanese monogram problem described above — where `不破 貞仁` produces
 
 ### Script-aware initial generation
 
-For Indic and Southeast Asian scripts, "first letter" is not "first codepoint" or "first default grapheme cluster" — it's the first extended grapheme cluster under [UAX #29](https://unicode.org/reports/tr29/). The library delegates grapheme segmentation to [`unicode_string`](https://hex.pm/packages/unicode_string), which implements the UAX #29 algorithm with Indic conjunct break handling. A Kannada name like `ಕ್ಯಾಥಿ` produces the initial `ಕ್` (Ka + virama), which is what a Kannada reader expects — not `ಕ್ಯಾ` (the full first conjunct) or `ಕ` (just the base consonant). See the [specification deviances document](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/specification_deviances.md) for the full discussion.
+For Indic and Southeast Asian scripts, "first letter" is not "first codepoint" or "first default grapheme cluster" — it's the first extended grapheme cluster under [UAX #29](https://unicode.org/reports/tr29/). The library delegates grapheme segmentation to [`unicode_string`](https://hex.pm/packages/unicode_string), which implements the UAX #29 algorithm with Indic conjunct break handling. A Kannada name like `ಕ್ಯಾಥಿ` produces the initial `ಕ್` (Ka + virama), which is what a Kannada reader expects — not `ಕ್ಯಾ` (the full first conjunct) or `ಕ` (just the base consonant). See the [CLDR Specification Conformance guide](https://github.com/elixir-localize/localize_person_names/blob/v1.0.0/guides/conformance.md) for the full discussion.
 
 ### Native vs foreign space replacement
 
@@ -180,7 +180,7 @@ Indonesian `Zendaya` (given name only) formats as `Zendaya` across all formats, 
 
 ### Length, usage, and formality are first-class
 
-The `:format`, `:usage`, and `:formality` options exist precisely because a conference-badge name ("Jo"), an email salutation ("Dear Dr. Nguyen,"), and a diploma name ("Josephine Margaret Nguyen, PhD") are different strings for the same person. The library provides the right string for each context rather than forcing callers to choose a single "display name" that's wrong in most contexts. The [MF2 integration](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/guides/message_formatting.md) makes these options available inside message templates, so a letter template can request the addressing form and a signature block can request the referring form from the same bound variable.
+The `:format`, `:usage`, and `:formality` options exist precisely because a conference-badge name ("Jo"), an email salutation ("Dear Dr. Nguyen,"), and a diploma name ("Josephine Margaret Nguyen, PhD") are different strings for the same person. The library provides the right string for each context rather than forcing callers to choose a single "display name" that's wrong in most contexts. The [MF2 integration](https://github.com/elixir-localize/localize_person_names/blob/v1.0.0/guides/message_formatting.md) makes these options available inside message templates, so a letter template can request the addressing form and a signature block can request the referring form from the same bound variable.
 
 ### Opt-in locale switching for cross-script names
 
@@ -188,7 +188,7 @@ When a Japanese formatter encounters a Latin-script name (for example a Western 
 
 ### Integration paths that fit existing code
 
-Applications rarely model people as generic `Localize.PersonName` structs — they have `%User{}`, `%Customer{}`, `%Employee{}` domain structs. The [`Localize.PersonName.Convertible` protocol](https://github.com/elixir-localize/localize_person_names/blob/v0.1.0/guides/integrating_existing_structs.md) lets a single `defimpl` block turn any existing struct into something the formatter accepts, without modifying the struct's module. This means the library can be adopted incrementally in a large codebase: add the protocol implementation, then gradually replace string concatenation with `Localize.PersonName.to_string/2` at each call site.
+Applications rarely model people as generic `Localize.PersonName` structs — they have `%User{}`, `%Customer{}`, `%Employee{}` domain structs. The [`Localize.PersonName.Convertible` protocol](https://github.com/elixir-localize/localize_person_names/blob/v1.0.0/guides/integrating_existing_structs.md) lets a single `defimpl` block turn any existing struct into something the formatter accepts, without modifying the struct's module. This means the library can be adopted incrementally in a large codebase: add the protocol implementation, then gradually replace string concatenation with `Localize.PersonName.to_string/2` at each call site.
 
 ### What the library does not do
 

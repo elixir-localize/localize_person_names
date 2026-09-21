@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+* Dead documentation links: the README and the cultural naming conventions guide pointed at a `v0.1.0` tag that was never published and at `specification_deviances.md`, which became `guides/conformance.md`. Closes [#1](https://github.com/elixir-localize/localize_person_names/issues/1).
+
 ## [1.0.0] - 2026-07-31
 
 ### Added

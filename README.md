@@ -81,7 +81,7 @@ A `:personName` MF2 function is provided as `Localize.PersonName.MF2` for use wi
 
 ### Locale coverage
 
-Of the 128 CLDR locale test data files available, 120 pass all tests. The 8 excluded locales and their reasons are documented in `specification_deviances.md` and summarised below:
+Of the 128 CLDR locale test data files available, 120 pass all tests. The 8 excluded locales and their reasons are documented in the [CLDR Specification Conformance](https://github.com/elixir-localize/localize_person_names/blob/v1.0.0/guides/conformance.md) guide and summarised below:
 
 | Locales | Failures | Cause |
 |---------|----------|-------|
@@ -91,7 +91,7 @@ Of the 128 CLDR locale test data files available, 120 pass all tests. The 8 excl
 
 ### Specification deviances
 
-See [specification_deviances.md](https://github.com/elixir-localize/localize_person_names/blob/v1.0.0/specification_deviances.md) for detailed analysis of four issues:
+See [CLDR Specification Conformance](https://github.com/elixir-localize/localize_person_names/blob/v1.0.0/guides/conformance.md) for detailed analysis of four issues:
 
 1. **Format selection tiebreaker** (es_US, es_MX, es_419) — Spec says "fewest unpopulated fields" but test data expects different selection.
 
