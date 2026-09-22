@@ -107,7 +107,7 @@ defmodule LocalizePersonNames.MixProject do
 
   defp deps do
     [
-      # cldr-49 branch only: replace with the hex release that ships CLDR 49.
+      # cldr-49 branch only: replace with {:localize, "~> 1.4"} once Localize 1.4.0 (CLDR 49) is on hex.
       {:localize, path: "../localize", override: true},
       {:unicode_string, "~> 2.0"},
       {:ecto, "~> 3.12", optional: true},

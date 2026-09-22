@@ -10,7 +10,7 @@ Tracked implementation gaps and release chores. Analysis of the spec's subtler p
 
 ## Blocked
 
-* [ ] **Restore the hex `localize` dependency** — the `cldr-49` branch uses `path: "../localize"` for CLDR 49 locale data. Blocked on a `localize` release that ships CLDR 49 and its hosted locale files.
+* [ ] **Restore the hex `localize` dependency** — the `cldr-49` branch uses `path: "../localize"` for CLDR 49 locale data. Blocked on Localize 1.4.0, the first release with CLDR 49; 1.3.0 (2026-09-21) is still CLDR 48.2.
 
 * [ ] **Myanmar word-break exclusion** — one `my` conformance test fails because a transliterated given name splits into six words instead of two. Blocked on `unicode_string` dictionary coverage for transliterated Myanmar names.
 
