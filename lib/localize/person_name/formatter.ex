@@ -85,6 +85,10 @@ defmodule Localize.PersonName.Formatter do
     derive_formatting_locale(name, formatting_locale, name_locale)
   end
 
+  defp maybe_switch_locale(other, _name, _formatting_locale, _name_locale) do
+    {:error, "Invalid value #{inspect(other)} for option :locale_switching"}
+  end
+
   defp validate_options(formats, options) do
     options =
       default_options(formats)

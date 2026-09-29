@@ -49,3 +49,17 @@ defmodule Localize.PersonName.Test.BehaviourStruct do
   @impl true
   def preferred_order(_), do: nil
 end
+
+defmodule Localize.PersonName.Test.UnconvertibleStruct do
+  @moduledoc false
+  defstruct [:value]
+end
+
+defmodule Localize.PersonName.Test.GarbageConversionStruct do
+  @moduledoc false
+  defstruct [:value]
+end
+
+defimpl Localize.PersonName.Convertible, for: Localize.PersonName.Test.GarbageConversionStruct do
+  def to_person_name(_value), do: :not_a_person_name
+end

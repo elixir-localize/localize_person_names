@@ -1,7 +1,7 @@
 # Status
 
-**Status:** active, 2026-09-25
+**Status:** active, 2026-09-29
 
-**Blocked on:** localize ~> 1.5, expected 2026-10
+**Blocked on:** localize ~> 1.4, expected 2026-10-16
 
-The next release needs Localize 1.5.0, the first release built on CLDR 49; 1.4.0 is an interim release still on CLDR 48.2. It cannot ship until CLDR 49 is final in October 2026.
+Version 1.1.0 is prepared and tested against Localize `main`, taken as a GitHub dependency, which carries CLDR 49 beta1 data. Hex cannot publish a package with a git dependency, so 1.1.0 waits for Localize 1.4.0, which is built on CLDR 49 and publishes once CLDR 49 is final (expected 2026-10-16).

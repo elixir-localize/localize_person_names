@@ -30,7 +30,7 @@ Locale `es_MX`, format parameters: `order: sorting, length: long, usage: referri
 
 The locale provides two sorting patterns for this combination:
 
-```
+```text
 Pattern A: {surname} {surname2}, {given-informal}    (3 fields)
 Pattern B: {surname}, {given-informal}               (2 fields)
 ```
@@ -76,9 +76,11 @@ The same pattern appears across 28 test cases in `es_US`, `es_MX`, and `es_419`,
 
 ### Test data references
 
-* `es_MX.txt` line 645: `parameters; sorting; long; referring; informal` → expected `"Müller Käthe"`
-* `es_US.txt` line 124: `parameters; sorting; medium; referring; formal` → expected `"García Pérez, Lucía"`
-* `es_419.txt` line 134: `parameters; sorting; long; referring; informal` → expected `"Jacobsen Christopher"`
+* `es_MX.txt` line 645: `parameters; sorting; long; referring; informal` → expected `"Müller Käthe"`.
+
+* `es_US.txt` line 124: `parameters; sorting; medium; referring; formal` → expected `"García Pérez, Lucía"`.
+
+* `es_419.txt` line 134: `parameters; sorting; long; referring; informal` → expected `"Jacobsen Christopher"`.
 
 ## 2. Empty Field Removal Drops Grouping Punctuation (cs, sk — now fixed)
 
@@ -107,7 +109,7 @@ Locale `cs`, format parameters: `order: sorting, length: long, usage: referring,
 
 The format pattern is:
 
-```
+```text
 {surname-core}, {given} {given2} {surname-prefix} ({title}, {credentials})
 ```
 
@@ -115,7 +117,7 @@ Input PersonName: `title: "paní", given: "Alexandra", given2: "Zuzana", surname
 
 After field interpolation, the relevant segment is:
 
-```
+```elixir
 ..., " ", nil, " (", {:field, "paní"}, ...
 ```
 
@@ -148,8 +150,9 @@ The spec could be improved by explicitly addressing how grouping punctuation sho
 
 ### Test data references
 
-* `cs.txt` line 316: `parameters; sorting; long; referring; formal` → expected `"Machová, Alexandra Zuzana (paní, Ph.D.)"`
-* `sk.txt` line 307: `parameters; sorting; long; referring; formal` → expected `"Machová, Alexandra Zuzana (paní, Ph.D.)"`
+* `cs.txt` line 316: `parameters; sorting; long; referring; formal` → expected `"Machová, Alexandra Zuzana (paní, Ph.D.)"`.
+
+* `sk.txt` line 307: `parameters; sorting; long; referring; formal` → expected `"Machová, Alexandra Zuzana (paní, Ph.D.)"`.
 
 ## 3. Initial Derivation Requires UAX #29 Grapheme Clusters, Not Default Unicode Grapheme Clusters
 
@@ -192,7 +195,7 @@ Kannada word `ಕ್ಯಾಥಿ` (transliterated "Kyāthi"), composed of the co
 
 **Default grapheme clusters** (Erlang/Elixir `String.graphemes/1`):
 
-```
+```text
 ["ಕ್ಯಾ", "ಥಿ"]   — 2 clusters
 ```
 
@@ -200,7 +203,7 @@ The virama (U+0CCD) joins KA + YA + AA into one large conjunct cluster.
 
 **UAX #29 extended grapheme clusters** (ICU, `Unicode.String.split(break: :grapheme)`):
 
-```
+```text
 ["ಕ್", "ಯಾ", "ಥಿ"]   — 3 clusters
 ```
 
@@ -242,9 +245,11 @@ The phrase "first grapheme cluster" in the initial derivation section should be 
 
 ### Test data references
 
-* `kn.txt` line 522: initial for `ಕ್ಯಾಥಿ` → expected `ಕ್.`
-* `km.txt` line 444: initial for `ហ្សាសាស្តូ` → expected `ហ្សា.`
-* `ml.txt` line 440: initial for `സ്‌റ്റോബർ` → expected `സ്‌.`
+* `kn.txt` line 522: initial for `ಕ್ಯಾಥಿ` → expected `ಕ್.`.
+
+* `km.txt` line 444: initial for `ហ្សាសាស្តូ` → expected `ហ្សា.`.
+
+* `ml.txt` line 440: initial for `സ്‌റ്റോബർ` → expected `സ്‌.`.
 
 ## 4. Test Data / Locale Data Mismatch for yo_BJ (Yoruba-Benin) — retired test data
 
@@ -266,7 +271,7 @@ Locale `yo_BJ`, format parameters: `order: givenFirst, length: short, usage: ref
 
 The locale format pattern is:
 
-```
+```text
 {given} {given2} {surname} {credentials}
 ```
 
@@ -284,7 +289,7 @@ Input PersonName: `given: "Olabisi", surname: "Adeboye"`, locale: `yo_BJ`.
 
 The `yo` locale has the identical format pattern for `givenFirst/short/referring/formal`:
 
-```
+```text
 {given} {given2} {surname} {credentials}
 ```
 
@@ -298,9 +303,11 @@ This affects 27 test cases in `yo_BJ.txt`, all involving `short/referring` or `m
 
 ### Test data references
 
-* `yo_BJ.txt` line 152: `parameters; givenFirst; short; referring; formal` → expected `"O. Adeboye"`, actual `"Olabisi Adeboye"`
-* `yo_BJ.txt` line 252: `parameters; sorting; short; referring; formal` → expected `"Akintola, A. A."`, actual `"Akintola, Adeolu Adegboyega"`
-* Compare `yo.txt` line 143: `parameters; givenFirst; short; referring; formal` → expected `"Olabisi Adeboye"` (full name, matches format data)
+* `yo_BJ.txt` line 152: `parameters; givenFirst; short; referring; formal` → expected `"O. Adeboye"`, actual `"Olabisi Adeboye"`.
+
+* `yo_BJ.txt` line 252: `parameters; sorting; short; referring; formal` → expected `"Akintola, A. A."`, actual `"Akintola, Adeolu Adegboyega"`.
+
+* Compare `yo.txt` line 143: `parameters; givenFirst; short; referring; formal` → expected `"Olabisi Adeboye"` (full name, matches format data).
 
 ## 5. Malayalam Sample Names Contain a Digit Homoglyph
 

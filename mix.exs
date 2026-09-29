@@ -1,7 +1,7 @@
 defmodule LocalizePersonNames.MixProject do
   use Mix.Project
 
-  @version "1.0.0"
+  @version "1.1.0"
 
   def project do
     [
@@ -107,8 +107,9 @@ defmodule LocalizePersonNames.MixProject do
 
   defp deps do
     [
-      # cldr-49 branch only: replace with {:localize, "~> 1.4"} once Localize 1.4.0 (CLDR 49) is on hex.
-      {:localize, path: "../localize", override: true},
+      # Localize main carries CLDR 49. Hex cannot publish a git dependency, so this
+      # becomes a version requirement once a CLDR 49 Localize is on hex.
+      {:localize, github: "elixir-localize/localize", branch: "main", override: true},
       {:unicode_string, "~> 2.0"},
       {:ecto, "~> 3.12", optional: true},
       {:ex_doc, "~> 0.34", optional: true, runtime: false},

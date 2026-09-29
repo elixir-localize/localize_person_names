@@ -54,7 +54,9 @@ The spec's 8-row truth table for `{surname}`, `{surname-prefix}`, and
 
 * `{surname-core}` falls back to plain `surname` when no explicit core exists
   (rows 2–4).
+
 * `{surname}` (plain) combines `prefix + " " + core` when both exist (row 5).
+
 * `{surname-prefix}` is cleared when prefix exists but surname (core/plain) is
   absent (row 7). This also applies to the combined plain `{surname}` value —
   `format_surname` suppresses the prefix when no surname exists.

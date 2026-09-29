@@ -6,9 +6,15 @@ All notable changes to this project will be documented in this file. This projec
 
 ### Changed
 
-* Conformance test data is CLDR 49 alpha2 and mirrors `common/testData/personNameTest` exactly: sixteen regional files CLDR retired in CLDR 45 are removed and `br` is added. Only `my` is excluded now, for one word-break failure.
+* Formats with CLDR 49 locale data, so it requires Localize 1.4 or later.
+
+* Conformance test data is CLDR 49 beta1 and mirrors `common/testData/personNameTest` exactly: sixteen regional files CLDR retired in CLDR 45 are removed and `br` is added. Only `my` is excluded now, for one word-break failure.
 
 ### Fixed
+
+* `to_string/2`, `to_iodata/2` and `new/1` return `{:error, reason}` for values, options and hand-built structs they cannot format, where they raised. A struct with neither a `Localize.PersonName.Convertible` implementation nor the behaviour is an error, not a `Protocol.UndefinedError`.
+
+* Structs resolve through the `Localize.PersonName.Convertible` protocol before the behaviour, as the docs describe. `String.Chars` renders an unformattable name as `""`, and `Localize.Chars` returns an exception struct as its error.
 
 * Initial generation takes a word's initial whenever its first code point is a letter, as CLDR's reference formatter does. Sinhala words with a zero-width joiner and Malayalam words containing a digit were dropped, which is why `si`, `km` and `ml` were excluded.
 

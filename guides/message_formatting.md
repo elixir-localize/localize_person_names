@@ -1,55 +1,33 @@
 # Using Localize.PersonName with Localize.Message
 
-This guide shows how to integrate person name formatting into [Localize.Message](https://hexdocs.pm/localize) (ICU MessageFormat 2 / MF2) templates. Names carry formality, ordering, and locale-specific rules that the message formatter doesn't know about on its own, so the integration is done by registering a small MF2 function that delegates to `Localize.PersonName.to_string/2`.
+This guide shows how to integrate person name formatting into [Localize.Message](https://hexdocs.pm/localize) (ICU MessageFormat 2 / MF2) templates. Names carry formality, ordering, and locale-specific rules that the message formatter doesn't know about on its own, so the integration is done by registering the library's `Localize.PersonName.MF2` function, which delegates to `Localize.PersonName.to_string/2`.
 
 To bring existing domain structs (e.g., `%User{}` or `%Customer{}`) into the formatter so they can be passed directly to message templates, see the [integrating existing name structs guide](integrating_existing_structs.md).
 
 ## Setting up the MF2 person name function
 
-MF2 formatters are registered either per-call or application-wide. The implementation is a single module that implements `Localize.Message.Function`:
+The library ships the function as `Localize.PersonName.MF2`, which implements `Localize.Message.Function`. It accepts a `Localize.PersonName` struct, any value with a `Localize.PersonName.Convertible` implementation, or any struct whose module implements the `Localize.PersonName` behaviour, and it returns an error rather than raising for anything else.
 
-```elixir
-defmodule MyApp.MF2.PersonNameFunction do
-  @moduledoc """
-  MF2 function that formats a `Localize.PersonName` (or any value
-  with a `Localize.PersonName.Convertible` implementation, or any
-  struct whose module implements the `Localize.PersonName`
-  behaviour) using the supplied options.
-  """
-
-  @behaviour Localize.Message.Function
-
-  @impl true
-  def format(value, func_opts, options) do
-    locale = Keyword.get(options, :locale)
-
-    person_opts =
-      []
-      |> put_atom(:format, func_opts["format"])
-      |> put_atom(:usage, func_opts["usage"])
-      |> put_atom(:formality, func_opts["formality"])
-      |> put_atom(:order, func_opts["order"])
-      |> Keyword.put(:locale, locale)
-
-    Localize.PersonName.to_string(value, person_opts)
-  end
-
-  defp put_atom(opts, _key, nil), do: opts
-  defp put_atom(opts, key, value) when is_binary(value) do
-    Keyword.put(opts, key, String.to_existing_atom(value))
-  end
-end
-```
-
-Register it globally in `config/config.exs`:
+Register it application-wide in `config/config.exs`:
 
 ```elixir
 config :localize, :mf2_functions, %{
-  "personName" => MyApp.MF2.PersonNameFunction
+  "personName" => Localize.PersonName.MF2
 }
 ```
 
-From this point on, any MF2 template can use `{$someName :personName ...}` and the bound `someName` value will be formatted as a person name.
+Or pass it on a single call with the `:functions` option:
+
+```elixir
+Localize.Message.format(
+  "{{Hello {$name :personName format=long}}}",
+  %{"name" => person_name},
+  locale: :en,
+  functions: %{"personName" => Localize.PersonName.MF2}
+)
+```
+
+From this point on, any MF2 template can use `{$someName :personName ...}` and the bound `someName` value will be formatted as a person name. The MF2 options `format`, `usage`, `formality` and `order` map to the options of the same names on `Localize.PersonName.to_string/2`; the locale comes from the message's own `:locale`.
 
 ## Example 1 — Formal tax letter
 
@@ -74,8 +52,7 @@ This example shows a formal letter addressed to a taxpayer and signed by the Tax
   )
 
 message = """
-  {{
-  Dear {$taxpayer :personName format=long usage=addressing formality=formal},
+  {{Dear {$taxpayer :personName format=long usage=addressing formality=formal},
 
   Our records show that you have an outstanding amount of
   {$amount :currency currency=AUD} owing to the
@@ -85,8 +62,7 @@ message = """
   Yours sincerely,
 
   {$commissioner :personName format=long usage=referring formality=formal}
-  Commissioner of Taxation
-  }}
+  Commissioner of Taxation}}
   """
 
 {:ok, letter} =
@@ -106,11 +82,11 @@ IO.puts(letter)
 
 Output:
 
-```
+```text
 Dear Dr. Nguyen,
 
 Our records show that you have an outstanding amount of
-A$1,547.85 owing to the
+$1,547.85 owing to the
 Australian Taxation Office. Please arrange payment within 21 days
 to avoid further action.
 
@@ -144,15 +120,13 @@ This example sends a casual happy-birthday email signed with a nickname. The dat
   )
 
 message = """
-  {{
-  Hey {$recipient :personName format=short usage=addressing formality=informal},
+  {{Hey {$recipient :personName format=short usage=addressing formality=informal},
 
   Happy birthday! Hope you have a brilliant day on
-  {$birthday :date fields=MMMMd}.
+  {$birthday :date fields=month-day}.
 
   Cheers,
-  {$sender :personName format=short usage=addressing formality=informal}
-  }}
+  {$sender :personName format=short usage=addressing formality=informal}}}
   """
 
 {:ok, email} =
@@ -172,7 +146,7 @@ IO.puts(email)
 
 Output:
 
-```
+```text
 Hey Jono,
 
 Happy birthday! Hope you have a brilliant day on

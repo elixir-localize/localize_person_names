@@ -50,6 +50,21 @@ defprotocol Localize.PersonName.Convertible do
 
   @doc """
   Converts `value` to a `t:Localize.PersonName.t/0` struct.
+
+  ### Arguments
+
+  * `value` is any term with a `Localize.PersonName.Convertible` implementation, typically a domain struct such as `%MyApp.Customer{}`.
+
+  ### Returns
+
+  * A `t:Localize.PersonName.t/0` struct built from `value`.
+
+  ### Examples
+
+      iex> {:ok, name} = Localize.PersonName.new(given_name: "José", surname: "Valim")
+      iex> Localize.PersonName.Convertible.to_person_name(name) == name
+      true
+
   """
   @spec to_person_name(t()) :: Localize.PersonName.t()
   def to_person_name(value)

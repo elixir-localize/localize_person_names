@@ -11,9 +11,13 @@ In 2010, Patrick McKenzie published [Falsehoods Programmers Believe About Names]
 A partial list of the assumptions the article dismantles:
 
 * People have exactly one canonical full name. (No — McKenzie himself accepts six different "full" names as correct for various purposes, and most systems he encounters accept none of them.)
+
 * Names are composed of a given name and a surname. (No — half the world orders surname first; some cultures use patronymics; Indonesian mononyms are a single name with no surname at all.)
+
 * People's names fit in a Latin-1 character set, or an ASCII character set, or 40 characters, or any specific length. (No on all counts. Names include Chinese characters, Arabic right-to-left scripts, Devanagari conjuncts, and arbitrary Unicode; the Māori king's name is 85 characters.)
+
 * Names don't change. (No — marriage, divorce, adoption, religious conversion, gender transition, and legal order all change names. Culturally, Japanese family registers can record multiple historical names; Spanish women may use maiden names professionally and married names legally.)
+
 * Punctuation in names is decorative. (No — the Irish surname `O'Hara` is not the same as the Japanese-romanised surname `Ohara`. The ogonek in `Wałęsa` distinguishes real people. The apostrophe is a functional part of the name, not noise to be stripped.)
 
 The underlying principle: a name is whatever the bearer says it is, in whatever form they say it is. A system that tells a user their name is wrong is not validating data — it is failing to model reality.
@@ -168,7 +172,7 @@ The Japanese monogram problem described above — where `不破 貞仁` produces
 
 ### Script-aware initial generation
 
-For Indic and Southeast Asian scripts, "first letter" is not "first codepoint" or "first default grapheme cluster" — it's the first extended grapheme cluster under [UAX #29](https://unicode.org/reports/tr29/). The library delegates grapheme segmentation to [`unicode_string`](https://hex.pm/packages/unicode_string), which implements the UAX #29 algorithm with Indic conjunct break handling. A Kannada name like `ಕ್ಯಾಥಿ` produces the initial `ಕ್` (Ka + virama), which is what a Kannada reader expects — not `ಕ್ಯಾ` (the full first conjunct) or `ಕ` (just the base consonant). See the [CLDR Specification Conformance guide](https://github.com/elixir-localize/localize_person_names/blob/v1.0.0/guides/conformance.md) for the full discussion.
+For Indic and Southeast Asian scripts, "first letter" is not "first codepoint" or "first default grapheme cluster" — it's the first extended grapheme cluster under [UAX #29](https://unicode.org/reports/tr29/). The library delegates grapheme segmentation to [`unicode_string`](https://hex.pm/packages/unicode_string), which implements the UAX #29 algorithm with Indic conjunct break handling. A Kannada name like `ಕ್ಯಾಥಿ` produces the initial `ಕ್` (Ka + virama), which is what a Kannada reader expects — not `ಕ್ಯಾ` (the full first conjunct) or `ಕ` (just the base consonant). See the [CLDR Specification Conformance guide](https://github.com/elixir-localize/localize_person_names/blob/v1.1.0/guides/conformance.md) for the full discussion.
 
 ### Native vs foreign space replacement
 
@@ -180,7 +184,7 @@ Indonesian `Zendaya` (given name only) formats as `Zendaya` across all formats, 
 
 ### Length, usage, and formality are first-class
 
-The `:format`, `:usage`, and `:formality` options exist precisely because a conference-badge name ("Jo"), an email salutation ("Dear Dr. Nguyen,"), and a diploma name ("Josephine Margaret Nguyen, PhD") are different strings for the same person. The library provides the right string for each context rather than forcing callers to choose a single "display name" that's wrong in most contexts. The [MF2 integration](https://github.com/elixir-localize/localize_person_names/blob/v1.0.0/guides/message_formatting.md) makes these options available inside message templates, so a letter template can request the addressing form and a signature block can request the referring form from the same bound variable.
+The `:format`, `:usage`, and `:formality` options exist precisely because a conference-badge name ("Jo"), an email salutation ("Dear Dr. Nguyen,"), and a diploma name ("Josephine Margaret Nguyen, PhD") are different strings for the same person. The library provides the right string for each context rather than forcing callers to choose a single "display name" that's wrong in most contexts. The [MF2 integration](https://github.com/elixir-localize/localize_person_names/blob/v1.1.0/guides/message_formatting.md) makes these options available inside message templates, so a letter template can request the addressing form and a signature block can request the referring form from the same bound variable.
 
 ### Opt-in locale switching for cross-script names
 
@@ -188,7 +192,7 @@ When a Japanese formatter encounters a Latin-script name (for example a Western 
 
 ### Integration paths that fit existing code
 
-Applications rarely model people as generic `Localize.PersonName` structs — they have `%User{}`, `%Customer{}`, `%Employee{}` domain structs. The [`Localize.PersonName.Convertible` protocol](https://github.com/elixir-localize/localize_person_names/blob/v1.0.0/guides/integrating_existing_structs.md) lets a single `defimpl` block turn any existing struct into something the formatter accepts, without modifying the struct's module. This means the library can be adopted incrementally in a large codebase: add the protocol implementation, then gradually replace string concatenation with `Localize.PersonName.to_string/2` at each call site.
+Applications rarely model people as generic `Localize.PersonName` structs — they have `%User{}`, `%Customer{}`, `%Employee{}` domain structs. The [`Localize.PersonName.Convertible` protocol](https://github.com/elixir-localize/localize_person_names/blob/v1.1.0/guides/integrating_existing_structs.md) lets a single `defimpl` block turn any existing struct into something the formatter accepts, without modifying the struct's module. This means the library can be adopted incrementally in a large codebase: add the protocol implementation, then gradually replace string concatenation with `Localize.PersonName.to_string/2` at each call site.
 
 ### What the library does not do
 
@@ -228,10 +232,16 @@ For anyone building systems that handle names:
 
 Sources:
 
-* [Unicode TR35 Person Names](https://www.unicode.org/reports/tr35/tr35-personNames.html)
-* [Falsehoods Programmers Believe About Names](https://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/)
-* [多文化環境におけるパーソナルネームの扱い方](https://zenn.dev/blue_jam/articles/5553aec104e710)
-* [Epsilon: 80% of Consumers More Likely to Shop with Brands that Show they Understand Them](https://www.businesswire.com/news/home/20210914005231/en/80-of-Consumers-More-Likely-to-Shop-with-Brands-that-Show-they-Understand-Them)
-* [McKinsey: The value of getting personalization right — or wrong — is multiplying](https://www.mckinsey.com/capabilities/growth-marketing-and-sales/our-insights/the-value-of-getting-personalization-right-or-wrong-is-multiplying)
-* [McKinsey: Personalizing the customer experience in retail](https://www.mckinsey.com/industries/retail/our-insights/personalizing-the-customer-experience-driving-differentiation-in-retail)
-* [Salesforce: Personalization, Data Security, and Speed Drive Customer Loyalty](https://www.salesforce.com/news/stories/customer-spending/)
+* [Unicode TR35 Person Names](https://www.unicode.org/reports/tr35/tr35-personNames.html).
+
+* [Falsehoods Programmers Believe About Names](https://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/).
+
+* [多文化環境におけるパーソナルネームの扱い方](https://zenn.dev/blue_jam/articles/5553aec104e710).
+
+* [Epsilon: 80% of Consumers More Likely to Shop with Brands that Show they Understand Them](https://www.businesswire.com/news/home/20210914005231/en/80-of-Consumers-More-Likely-to-Shop-with-Brands-that-Show-they-Understand-Them).
+
+* [McKinsey: The value of getting personalization right — or wrong — is multiplying](https://www.mckinsey.com/capabilities/growth-marketing-and-sales/our-insights/the-value-of-getting-personalization-right-or-wrong-is-multiplying).
+
+* [McKinsey: Personalizing the customer experience in retail](https://www.mckinsey.com/industries/retail/our-insights/personalizing-the-customer-experience-driving-differentiation-in-retail).
+
+* [Salesforce: Personalization, Data Security, and Speed Drive Customer Loyalty](https://www.salesforce.com/news/stories/customer-spending/).
