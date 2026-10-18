@@ -1,10 +1,12 @@
 # CLDR Specification Conformance
 
-THe implementation fully meets the [TR35-8 PersonNames](https://www.unicode.org/reports/tr35/tr35-personNames.html) specification but there are some differences in test results for a few locales.
+The implementation fully meets the [TR35-8 PersonNames](https://www.unicode.org/reports/tr35/tr35-personNames.html) specification but there are some differences in test results for a few locales.
 
 This document describes cases where the CLDR person name test data produces results that are inconsistent with the specification text in [TR35-8 PersonNames](https://www.unicode.org/reports/tr35/tr35-personNames.html). These are filed as potential specification or test data bugs.
 
-## 1. Format Selection Tiebreaker Inconsistency (es_US, es_MX, es_419)
+## 1. Format Selection Tiebreaker Inconsistency (es_US, es_MX, es_419 — no longer in the test data)
+
+CLDR removed the `es_US`, `es_MX`, `es_419` and `yo_BJ` test files in April 2024 ([CLDR-16938](https://unicode-org.atlassian.net/browse/CLDR-16938)), so the current conformance data no longer exercises this case. The analysis is kept because the question it raises about the specification stands.
 
 ### Affected locales
 
@@ -72,9 +74,9 @@ Possible interpretations:
 
 * The spec text may need to be updated to reflect the actual ICU behavior.
 
-The same pattern appears across 28 test cases in `es_US`, `es_MX`, and `es_419`, all involving sorting-order formats where one pattern includes `{surname2}` and the other does not.
+The same pattern appeared across 28 test cases in `es_US`, `es_MX`, and `es_419`, all involving sorting-order formats where one pattern includes `{surname2}` and the other does not.
 
-### Test data references
+### Test data references (CLDR 44 and earlier)
 
 * `es_MX.txt` line 645: `parameters; sorting; long; referring; informal` → expected `"Müller Käthe"`
 * `es_US.txt` line 124: `parameters; sorting; medium; referring; formal` → expected `"García Pérez, Lucía"`
@@ -242,11 +244,14 @@ The phrase "first grapheme cluster" in the initial derivation section should be 
 
 ### Test data references
 
-* `kn.txt` line 522: initial for `ಕ್ಯಾಥಿ` → expected `ಕ್.`
-* `km.txt` line 444: initial for `ហ្សាសាស្តូ` → expected `ហ្សា.`
-* `ml.txt` line 440: initial for `സ്‌റ്റോബർ` → expected `സ്‌.`
+* `kn.txt` line 520: initial for `ಕ್ಯಾಥಿ` → expected `ಕ್.`
+* `ml.txt` line 643: initial for `സ്‌റ്റോബർ` → expected `സ്‌.`
 
-## 4. Test Data / Locale Data Mismatch for yo_BJ (Yoruba-Benin)
+The CLDR 49 `km.txt` no longer contains `ហ្សាសាស្តូ`; the Khmer row above still shows how the two algorithms differ for a coeng.
+
+## 4. Test Data / Locale Data Mismatch for yo_BJ (Yoruba-Benin — no longer in the test data)
+
+CLDR removed the `es_US`, `es_MX`, `es_419` and `yo_BJ` test files in April 2024 ([CLDR-16938](https://unicode-org.atlassian.net/browse/CLDR-16938)), so the current conformance data no longer exercises this case.
 
 ### Affected locales
 
@@ -290,9 +295,9 @@ The `yo` test data expects `"Olabisi Adeboye"` (full name) for this same combina
 
 The `yo_BJ` test data appears to have been generated against a different version of the `yo_BJ` locale data that included `-initial` modifiers in the short/formal format patterns (e.g., `{given-initial} {given2-initial} {surname}`). The current locale data does not include these modifiers, making the test expectations inconsistent with the format patterns.
 
-This affects 27 test cases in `yo_BJ.txt`, all involving `short/referring` or `medium/referring` format combinations where initials are expected but not produced.
+This affected 27 test cases in `yo_BJ.txt`, all involving `short/referring` or `medium/referring` format combinations where initials are expected but not produced.
 
-### Test data references
+### Test data references (CLDR 44 and earlier)
 
 * `yo_BJ.txt` line 152: `parameters; givenFirst; short; referring; formal` → expected `"O. Adeboye"`, actual `"Olabisi Adeboye"`
 * `yo_BJ.txt` line 252: `parameters; sorting; short; referring; formal` → expected `"Akintola, A. A."`, actual `"Akintola, Adeolu Adegboyega"`

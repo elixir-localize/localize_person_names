@@ -1,8 +1,6 @@
 defmodule Localize.PersonName.FormatTest do
   use ExUnit.Case, async: true
 
-  # The issues are documented in detail in guides/conformance.md.
-  #
   # si, my, ml (11 failures against the CLDR 49 data): Unicode.String
   # word-break segmentation produces different word boundaries than ICU
   # for multi-word names in Sinhala, Myanmar and Malayalam, leading to
