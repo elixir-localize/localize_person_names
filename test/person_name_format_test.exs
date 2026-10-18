@@ -1,25 +1,13 @@
 defmodule Localize.PersonName.FormatTest do
   use ExUnit.Case, async: true
 
-  # All issues are documented in detail in specification_deviances.md.
+  # The issues are documented in detail in guides/conformance.md.
   #
-  # es_US, es_MX, es_419 (28 failures): The spec's format selection
-  # algorithm selects the pattern with fewest unpopulated fields, but
-  # the CLDR test data expects the pattern with more fields (including
-  # an unpopulated {surname2}) to be selected. This appears to be a
-  # discrepancy between the spec text and the ICU reference
-  # implementation's selection logic.
-  #
-  # yo_BJ (27 failures): The test data expects initials (e.g.,
-  # "O. Adeboye") for short/formal formats, but the yo_BJ locale data
-  # has no -initial modifier in those format patterns. The parent locale
-  # yo has identical patterns and its test data correctly expects full
-  # names. This is a test data / locale data synchronisation issue.
-  #
-  # si, my, km, ml (61 failures): Unicode.String word-break
-  # segmentation produces different word boundaries than ICU for
-  # multi-word names in Sinhala, Myanmar, Khmer, and Malayalam,
-  # leading to incorrect initial generation for compound words.
+  # si, my, ml (11 failures against the CLDR 49 data): Unicode.String
+  # word-break segmentation produces different word boundaries than ICU
+  # for multi-word names in Sinhala, Myanmar and Malayalam, leading to
+  # incorrect initial generation for compound words. Khmer, excluded for
+  # the same reason before CLDR 49, now passes.
 
   @tests 1..1000
 
@@ -28,12 +16,7 @@ defmodule Localize.PersonName.FormatTest do
   @failing_locales [
     :si,
     :my,
-    :km,
-    :ml,
-    :yo_BJ,
-    :es_US,
-    :es_MX,
-    :es_419
+    :ml
   ]
 
   @test_locales @all_locales -- @failing_locales

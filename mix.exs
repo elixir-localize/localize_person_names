@@ -18,6 +18,7 @@ defmodule LocalizePersonNames.MixProject do
       docs: docs(),
       dialyzer: [
         ignore_warnings: ".dialyzer_ignore_warnings",
+        plt_add_apps: ~w(mix)a,
         flags: [
           :error_handling,
           :unknown,
