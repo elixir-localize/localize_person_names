@@ -22,6 +22,10 @@ All notable changes to this project will be documented in this file. This projec
 
 * Structs resolve through the `Localize.PersonName.Convertible` protocol before the behaviour, as the docs describe. `String.Chars` renders an unformattable name as `""`, and `Localize.Chars` returns an exception struct as its error.
 
+* `to_string!/2` and `to_iodata!/2` raise the exception when the reason is one, such as `Localize.InvalidLocaleError`, where they raised a `FunctionClauseError`.
+
+* Locale switching no longer treats a locale with no person-name data as having its own name order, which sent switching down the wrong branch for unknown locales.
+
 * Initial generation takes a word's initial whenever its first code point is a letter, as CLDR's reference formatter does. Sinhala words with a zero-width joiner and Malayalam words containing a digit were dropped, which is why `si`, `km` and `ml` were excluded.
 
 * Dead documentation links: the README and the cultural naming conventions guide pointed at a `v0.1.0` tag that was never published and at `specification_deviances.md`, which became `guides/conformance.md`. Closes [#1](https://github.com/elixir-localize/localize_person_names/issues/1).

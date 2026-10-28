@@ -5,20 +5,23 @@ defmodule Localize.PersonName.BadInputTest do
   alias Localize.PersonName.Test.GarbageConversionStruct
   alias Localize.PersonName.Test.UnconvertibleStruct
 
+  # Each case carries a short label: ExUnit limits a test name to 255
+  # characters, and a struct's inspect output is longer than that.
   @bad_values [
-    nil,
-    "",
-    :"",
-    "José",
-    42,
-    %{given_name: "José"},
-    [given_name: "José"],
-    %UnconvertibleStruct{value: 1},
-    %GarbageConversionStruct{value: 1},
-    %PersonName{given_name: nil},
-    %PersonName{given_name: 42},
-    %PersonName{given_name: "José", locale: "zz-!!"},
-    %PersonName{given_name: "José", locale: :""}
+    {"nil", nil},
+    {"an empty string", ""},
+    {"the empty atom", :""},
+    {"a string", "José"},
+    {"an integer", 42},
+    {"a plain map", %{given_name: "José"}},
+    {"a keyword list", [given_name: "José"]},
+    {"a struct with no conversion", %UnconvertibleStruct{value: 1}},
+    {"a struct whose conversion returns garbage", %GarbageConversionStruct{value: 1}},
+    {"a PersonName with no given name", %PersonName{given_name: nil}},
+    {"a PersonName with an integer given name", %PersonName{given_name: 42}},
+    {"a PersonName with a malformed locale string",
+     %PersonName{given_name: "José", locale: "zz-!!"}},
+    {"a PersonName with the empty atom as locale", %PersonName{given_name: "José", locale: :""}}
   ]
 
   setup_all do
@@ -27,10 +30,10 @@ defmodule Localize.PersonName.BadInputTest do
   end
 
   describe "to_string/2 and to_iodata/2 with a value that is not a formattable name" do
-    for value <- @bad_values do
+    for {label, value} <- @bad_values do
       @value Macro.escape(value)
 
-      test "return an error for #{inspect(value)}" do
+      test "return an error for #{label}" do
         assert {:error, _reason} = PersonName.to_string(@value)
         assert {:error, _reason} = PersonName.to_iodata(@value)
       end
@@ -48,21 +51,21 @@ defmodule Localize.PersonName.BadInputTest do
   end
 
   describe "to_string/2 with invalid options" do
-    for options <- [
-          [format: :bogus],
-          [usage: :nope],
-          [formality: nil],
-          [order: :sideways],
-          [locale: "zz-!!"],
-          [locale: :""],
-          [locale: 42],
-          [locale_switching: :maybe],
-          %{format: :long},
-          [:not_a_keyword]
+    for {label, options} <- [
+          {"an unknown format", [format: :bogus]},
+          {"an unknown usage", [usage: :nope]},
+          {"a nil formality", [formality: nil]},
+          {"an unknown order", [order: :sideways]},
+          {"a malformed locale string", [locale: "zz-!!"]},
+          {"the empty atom as locale", [locale: :""]},
+          {"an integer locale", [locale: 42]},
+          {"a non-boolean locale_switching", [locale_switching: :maybe]},
+          {"options given as a map", %{format: :long}},
+          {"options that are not a keyword list", [:not_a_keyword]}
         ] do
       @options Macro.escape(options)
 
-      test "return an error for #{inspect(options)}", %{name: name} do
+      test "return an error for #{label}", %{name: name} do
         assert {:error, _reason} = PersonName.to_string(name, @options)
       end
     end

@@ -146,7 +146,7 @@ defmodule Localize.PersonName do
         }
 
   @typedoc "Standard error response."
-  @type error_message() :: String.t() | {module(), String.t()}
+  @type error_message() :: String.t() | Exception.t() | {module(), String.t()}
 
   @doc """
   Returns a `t:Localize.PersonName.t/0` struct crafted
@@ -437,18 +437,21 @@ defmodule Localize.PersonName do
 
   @impl Localize.PersonName
   @doc false
-  def other_given_names(%__MODULE__{other_given_names: other_given_names}),
-    do: other_given_names
+  def other_given_names(%__MODULE__{other_given_names: other_given_names}) do
+    other_given_names
+  end
 
   @impl Localize.PersonName
   @doc false
-  def informal_given_name(%__MODULE__{informal_given_name: informal_given_name}),
-    do: informal_given_name
+  def informal_given_name(%__MODULE__{informal_given_name: informal_given_name}) do
+    informal_given_name
+  end
 
   @impl Localize.PersonName
   @doc false
-  def surname_prefix(%__MODULE__{surname_prefix: surname_prefix}),
-    do: surname_prefix
+  def surname_prefix(%__MODULE__{surname_prefix: surname_prefix}) do
+    surname_prefix
+  end
 
   @impl Localize.PersonName
   @doc false
@@ -458,8 +461,9 @@ defmodule Localize.PersonName do
 
   @impl Localize.PersonName
   @doc false
-  def other_surnames(%__MODULE__{other_surnames: other_surnames}),
-    do: other_surnames
+  def other_surnames(%__MODULE__{other_surnames: other_surnames}) do
+    other_surnames
+  end
 
   @impl Localize.PersonName
   @doc false
@@ -481,8 +485,9 @@ defmodule Localize.PersonName do
 
   @impl Localize.PersonName
   @doc false
-  def preferred_order(%__MODULE__{preferred_order: preferred_order}),
-    do: preferred_order
+  def preferred_order(%__MODULE__{preferred_order: preferred_order}) do
+    preferred_order
+  end
 
   # Resolves any accepted input to a validated person name struct. The
   # Convertible protocol is consulted before the behaviour, as the
@@ -605,6 +610,10 @@ defmodule Localize.PersonName do
   @spec raise_error(error_message()) :: no_return()
   defp raise_error(reason) when is_binary(reason) do
     raise Localize.PersonNameError, reason
+  end
+
+  defp raise_error(%{__exception__: true} = exception) do
+    raise exception
   end
 
   defp raise_error({exception, message}) do

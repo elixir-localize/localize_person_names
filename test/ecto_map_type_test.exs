@@ -188,4 +188,44 @@ defmodule Localize.PersonName.Ecto.Map.TypeTest do
       refute Type.equal?(name(), %PersonName{name() | surname: "Schmidt"})
     end
   end
+
+  describe "lenient parts" do
+    test "a nil or empty preferred_order loads as nil" do
+      assert {:ok, %PersonName{preferred_order: nil}} =
+               Type.load(%{"given_name" => "Jo", "preferred_order" => nil})
+
+      assert {:ok, %PersonName{preferred_order: nil}} =
+               Type.load(%{"given_name" => "Jo", "preferred_order" => ""})
+    end
+
+    test "a preferred_order given as an atom is kept" do
+      assert {:ok, %PersonName{preferred_order: :sorting}} =
+               Type.cast(%{given_name: "Jo", preferred_order: :sorting})
+    end
+
+    test "a preferred_order of the wrong type is an error" do
+      assert :error = Type.load(%{"given_name" => "Jo", "preferred_order" => 42})
+    end
+
+    test "a nil locale loads as nil and a language tag is kept" do
+      {:ok, tag} = Localize.validate_locale("fr")
+      assert {:ok, %PersonName{locale: nil}} = Type.load(%{"given_name" => "Jo", "locale" => nil})
+      assert {:ok, %PersonName{locale: ^tag}} = Type.cast(%{given_name: "Jo", locale: tag})
+    end
+
+    test "a locale of the wrong type is an error" do
+      assert :error = Type.load(%{"given_name" => "Jo", "locale" => 42})
+    end
+
+    test "keys that are not name parts are ignored" do
+      assert {:ok, %PersonName{given_name: "Jo"}} =
+               Type.cast(%{1 => "x", given_name: "Jo", nickname: "J"})
+    end
+
+    test "values that are not maps are errors" do
+      assert :error = Type.cast("Jo")
+      assert :error = Type.load("Jo")
+      assert :error = Type.dump("Jo")
+    end
+  end
 end

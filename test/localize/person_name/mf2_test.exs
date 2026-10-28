@@ -85,3 +85,65 @@ defmodule Localize.PersonName.MF2Test do
     end
   end
 end
+
+defmodule Localize.PersonName.MF2DirectTest do
+  use ExUnit.Case, async: true
+
+  alias Localize.PersonName.MF2
+
+  setup_all do
+    {:ok, name} =
+      Localize.PersonName.new(
+        title: "Dr.",
+        given_name: "Josephine",
+        other_given_names: "Margaret",
+        surname: "Nguyen",
+        credentials: "PhD",
+        locale: "en-AU"
+      )
+
+    %{name: name}
+  end
+
+  describe "format/3 option mapping" do
+    test "formats with no locale option at all", %{name: name} do
+      assert {:ok, formatted} = MF2.format(name, %{}, [])
+      assert is_binary(formatted)
+    end
+
+    test "reads function options keyed by atom as well as by string", %{name: name} do
+      assert {:ok, by_atom} = MF2.format(name, %{format: "long"}, locale: :en)
+      assert {:ok, by_string} = MF2.format(name, %{"format" => "long"}, locale: :en)
+      assert by_atom == by_string
+    end
+
+    for {option, values} <- [
+          {"format", ~w(short medium long)},
+          {"formality", ~w(formal informal)},
+          {"usage", ~w(addressing referring monogram)},
+          {"order", ~w(givenFirst surnameFirst sorting)}
+        ],
+        value <- values do
+      # A sorting order exists only for referring usage in CLDR data.
+      test "accepts #{option}=#{value}", %{name: name} do
+        function_options = Map.put_new(%{unquote(option) => unquote(value)}, "usage", "referring")
+        assert {:ok, formatted} = MF2.format(name, function_options, locale: :en)
+
+        assert is_binary(formatted)
+      end
+    end
+
+    for option <- ~w(format formality usage order) do
+      test "rejects an unknown #{option} value without creating an atom", %{name: name} do
+        value = "neverAnAtom" <> unquote(option)
+        assert {:error, _reason} = MF2.format(name, %{unquote(option) => value}, locale: :en)
+        assert_raise ArgumentError, fn -> String.to_existing_atom(value) end
+      end
+    end
+
+    test "rejects a value that is not a struct" do
+      assert {:error, reason} = MF2.format("Josephine", %{}, locale: :en)
+      assert reason =~ "requires a PersonName struct"
+    end
+  end
+end

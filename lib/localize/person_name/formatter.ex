@@ -119,11 +119,8 @@ defmodule Localize.PersonName.Formatter do
       {:formality, value}, acc when value in @formality ->
         {:cont, acc}
 
-      {option, value}, _acc when option in @format_options ->
+      {option, value}, _acc ->
         {:halt, {:error, "Invalid value #{inspect(value)} for option #{inspect(option)}"}}
-
-      {option, _value}, _acc ->
-        {:halt, {:error, "Invalid option #{inspect(option)}"}}
     end)
   end
 
@@ -231,14 +228,17 @@ defmodule Localize.PersonName.Formatter do
     []
   end
 
-  defp remove_up_to_nil([{:field, _value} | _rest]),
-    do: []
+  defp remove_up_to_nil([{:field, _value} | _rest]) do
+    []
+  end
 
-  defp remove_up_to_nil([nil | rest]),
-    do: rest
+  defp remove_up_to_nil([nil | rest]) do
+    rest
+  end
 
-  defp remove_up_to_nil([binary | rest]) when is_binary(binary),
-    do: remove_up_to_nil(rest)
+  defp remove_up_to_nil([binary | rest]) when is_binary(binary) do
+    remove_up_to_nil(rest)
+  end
 
   @doc false
   def combine_binary(first, "") do
@@ -596,8 +596,9 @@ defmodule Localize.PersonName.Formatter do
   end
 
   defp locale_to_atom(%Localize.LanguageTag{cldr_locale_id: locale_id})
-       when not is_nil(locale_id),
-       do: locale_id
+       when not is_nil(locale_id) do
+    locale_id
+  end
 
   defp locale_to_atom(%Localize.LanguageTag{language: language}) do
     language
@@ -934,30 +935,39 @@ defmodule Localize.PersonName.Formatter do
     end)
   end
 
-  defp filled?([:title | _], %{title: title}),
-    do: is_binary(title)
+  defp filled?([:title | _], %{title: title}) do
+    is_binary(title)
+  end
 
-  defp filled?([:given2 | _], %{other_given_names: other_given_names}),
-    do: is_binary(other_given_names)
+  defp filled?([:given2 | _], %{other_given_names: other_given_names}) do
+    is_binary(other_given_names)
+  end
 
-  defp filled?([:given, :informal | _], name),
-    do: is_binary(name.informal_given_name) || is_binary(name.given_name)
+  defp filled?([:given, :informal | _], name) do
+    is_binary(name.informal_given_name) || is_binary(name.given_name)
+  end
 
-  defp filled?([:given | _], %{given_name: given_name}),
-    do: is_binary(given_name)
+  defp filled?([:given | _], %{given_name: given_name}) do
+    is_binary(given_name)
+  end
 
-  defp filled?([:surname, :prefix | _], %{surname_prefix: surname_prefix}),
-    do: is_binary(surname_prefix)
+  defp filled?([:surname, :prefix | _], %{surname_prefix: surname_prefix}) do
+    is_binary(surname_prefix)
+  end
 
-  defp filled?([:surname | _], %{surname: surname}),
-    do: is_binary(surname)
+  defp filled?([:surname | _], %{surname: surname}) do
+    is_binary(surname)
+  end
 
-  defp filled?([:surname2 | _], %{other_surnames: other_surnames}),
-    do: is_binary(other_surnames)
+  defp filled?([:surname2 | _], %{other_surnames: other_surnames}) do
+    is_binary(other_surnames)
+  end
 
-  defp filled?([:generation | _], %{generation: generation}),
-    do: is_binary(generation)
+  defp filled?([:generation | _], %{generation: generation}) do
+    is_binary(generation)
+  end
 
-  defp filled?([:credentials | _], %{credentials: credentials}),
-    do: is_binary(credentials)
+  defp filled?([:credentials | _], %{credentials: credentials}) do
+    is_binary(credentials)
+  end
 end

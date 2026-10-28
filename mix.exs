@@ -16,6 +16,7 @@ defmodule LocalizePersonNames.MixProject do
       description: description(),
       package: package(),
       docs: docs(),
+      test_coverage: [ignore_modules: coverage_ignore_modules()],
       dialyzer: [
         ignore_warnings: ".dialyzer_ignore_warnings",
         plt_add_apps: ~w(mix)a,
@@ -106,6 +107,18 @@ defmodule LocalizePersonNames.MixProject do
   defp elixirc_paths(:test), do: ["lib", "mix", "test/support"]
   defp elixirc_paths(:dev), do: ["lib", "mix"]
   defp elixirc_paths(_), do: ["lib"]
+
+  # Build tooling and test support are not library surface, so they are
+  # left out of the coverage summary, as Localize does.
+  defp coverage_ignore_modules do
+    [
+      ~r/^Mix\.Tasks\./,
+      ~r/^Localize\.PersonName\.Test\./,
+      ~r/^Localize\.PersonName\.Convertible\.Localize\.PersonName\.Test\./,
+      Localize.PersonName.TestData,
+      Localize.PersonName.Names
+    ]
+  end
 
   defp deps do
     [

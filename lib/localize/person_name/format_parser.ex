@@ -47,22 +47,26 @@ defmodule Localize.PersonName.FormatParser do
     has_formatting_data?(locale_id)
   end
 
-  def has_formatting_data?(locale_id) when is_atom(locale_id) do
-    with {:ok, locale_data} <- Localize.Locale.get(locale_id, [:person_names]),
-         {:ok, root_data} <- Localize.Locale.get(:und, [:person_names]) do
-      locale_given = Map.get(locale_data || %{}, :given_first, [])
-      locale_surname = Map.get(locale_data || %{}, :surname_first, [])
-      root_given = Map.get(root_data || %{}, :given_first, [])
-      root_surname = Map.get(root_data || %{}, :surname_first, [])
+  def has_formatting_data?(locale_id) when is_atom(locale_id) and not is_nil(locale_id) do
+    locale_data = Localize.Locale.get(locale_id, [:person_names])
+    root_data = Localize.Locale.get(:und, [:person_names])
 
-      locale_given != root_given or locale_surname != root_surname
-    else
-      _ -> false
+    case {locale_data, root_data} do
+      {{:ok, locale_data}, {:ok, root_data}} when is_map(locale_data) and is_map(root_data) ->
+        name_order_differs?(locale_data, root_data)
+
+      _other ->
+        false
     end
   end
 
   def has_formatting_data?(_) do
     false
+  end
+
+  defp name_order_differs?(locale_data, root_data) do
+    Map.get(locale_data, :given_first, []) != Map.get(root_data, :given_first, []) or
+      Map.get(locale_data, :surname_first, []) != Map.get(root_data, :surname_first, [])
   end
 
   defp load_and_parse(locale_id) do
