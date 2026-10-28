@@ -148,8 +148,9 @@ defmodule Localize.PersonName do
 
   ### Arguments
 
-  * `attributes` is a keyword list of person name
+  * `attributes` is a keyword list or map of person name
     attributes that is used to construct a `t:Localize.PersonName.t/0`.
+    Any other value returns an error.
 
   ### Options
 
@@ -227,9 +228,22 @@ defmodule Localize.PersonName do
       {:error, "Person Name requires at least a :given_name"}
 
   """
-  @spec new(attributes :: Keyword.t()) :: {:ok, t()} | {:error, error_message()}
-  def new(attributes \\ []) do
+  @spec new(attributes :: Keyword.t() | map()) :: {:ok, t()} | {:error, error_message()}
+  def new(attributes \\ [])
+
+  def new(attributes) when is_list(attributes) do
     validate_name(attributes)
+  end
+
+  def new(%{} = attributes) do
+    attributes
+    |> Map.delete(:__struct__)
+    |> Map.to_list()
+    |> validate_name()
+  end
+
+  def new(other) do
+    {:error, "Person name attributes must be a keyword list or a map. Found #{inspect(other)}"}
   end
 
   @doc """
@@ -237,9 +251,10 @@ defmodule Localize.PersonName do
 
   ### Arguments
 
-  * `person_name` is any struct that implements the
-    `Localize.PersonName` behaviour, including the native
-    `t:Localize.PersonName.t/0` struct.
+  * `person_name` is a `t:Localize.PersonName.t/0` struct, or any
+    struct with a `Localize.PersonName.Convertible` implementation
+    or whose module implements the `Localize.PersonName` behaviour.
+    Any other value returns an error.
 
   * `options` is a keyword list of options.
 
@@ -292,9 +307,9 @@ defmodule Localize.PersonName do
       {:ok, "Mr. José Valim Ph.D."}
 
   """
-  @spec to_string(name :: struct(), options :: format_options()) ::
+  @spec to_string(name :: term(), options :: format_options()) ::
           {:ok, String.t()} | {:error, error_message()}
-  def to_string(name, options \\ []) when is_struct(name) do
+  def to_string(name, options \\ []) do
     with {:ok, iodata} <- to_iodata(name, options) do
       {:ok, :erlang.iolist_to_binary(iodata)}
     end
@@ -314,9 +329,9 @@ defmodule Localize.PersonName do
       "Mr. José Valim Ph.D."
 
   """
-  @spec to_string!(name :: struct(), options :: format_options()) ::
+  @spec to_string!(name :: term(), options :: format_options()) ::
           String.t() | no_return()
-  def to_string!(name, options \\ []) when is_struct(name) do
+  def to_string!(name, options \\ []) do
     case to_string(name, options) do
       {:ok, formatted_name} -> formatted_name
       {:error, reason} -> raise_error(reason)
@@ -345,12 +360,12 @@ defmodule Localize.PersonName do
       {:ok, ["Mr.", " ", "Valim"]}
 
   """
-  @spec to_iodata(person_name :: struct(), options :: format_options()) ::
+  @spec to_iodata(person_name :: term(), options :: format_options()) ::
           {:ok, :erlang.iodata()} | {:error, error_message()}
-  def to_iodata(person_name, options \\ []) when is_struct(person_name) do
-    locale = Keyword.get(options, :locale, Localize.get_locale())
-
-    with {:ok, person_name} <- maybe_cast_name(person_name),
+  def to_iodata(person_name, options \\ []) do
+    with :ok <- validate_options_list(options),
+         {:ok, person_name} <- maybe_cast_name(person_name),
+         locale = Keyword.get(options, :locale, Localize.get_locale()),
          {:ok, formatting_locale} <- Localize.validate_locale(locale) do
       Formatter.to_iodata(person_name, formatting_locale, options)
     end
@@ -360,9 +375,9 @@ defmodule Localize.PersonName do
   Same as `to_iodata/2` but raises on error.
 
   """
-  @spec to_iodata!(person_name :: struct(), options :: format_options()) ::
+  @spec to_iodata!(person_name :: term(), options :: format_options()) ::
           :erlang.iodata() | no_return()
-  def to_iodata!(person_name, options \\ []) when is_struct(person_name) do
+  def to_iodata!(person_name, options \\ []) do
     case to_iodata(person_name, options) do
       {:ok, iodata} -> iodata
       {:error, reason} -> raise_error(reason)
@@ -451,27 +466,64 @@ defmodule Localize.PersonName do
   def preferred_order(%__MODULE__{preferred_order: preferred_order}),
     do: preferred_order
 
+  # Resolves any accepted input to a validated person name struct. The
+  # Convertible protocol is consulted before the behaviour, as the
+  # moduledoc describes. Every result is validated like `new/1` input,
+  # because structs can be built directly or returned by user code.
   defp maybe_cast_name(%__MODULE__{} = name) do
-    {:ok, name}
+    validate_person_name(name)
   end
 
-  defp maybe_cast_name(%module{} = name) when module != __MODULE__ do
-    # Dispatch based on which integration path the struct uses:
-    # the Localize.PersonName behaviour (detected by checking for
-    # an exported given_name/1 function on the struct's module) or
-    # the Localize.PersonName.Convertible protocol. apply/3 is used
-    # for the protocol call so the compiler's type checker doesn't
-    # flag it as unreachable when only Localize.PersonName itself
-    # has a consolidated protocol implementation at compile time —
-    # user-defined implementations are resolved at runtime.
-    if function_exported?(module, :given_name, 1) do
-      name
-      |> cast_to_person_name()
-      |> Formatter.wrap(:ok)
+  defp maybe_cast_name(%module{} = name) do
+    cond do
+      # apply/3 keeps the type checker from treating user implementations as
+      # unreachable: at compile time the consolidated protocol knows only the
+      # Localize.PersonName implementation.
+      implementation = Localize.PersonName.Convertible.impl_for(name) ->
+        # credo:disable-for-next-line Credo.Check.Refactor.Apply
+        converted_name = apply(implementation, :to_person_name, [name])
+        validate_converted_name(converted_name, module)
+
+      function_exported?(module, :given_name, 1) ->
+        name
+        |> cast_to_person_name()
+        |> validate_person_name()
+
+      true ->
+        {:error,
+         "#{inspect(module)} has no Localize.PersonName.Convertible implementation " <>
+           "and does not implement the Localize.PersonName behaviour"}
+    end
+  end
+
+  defp maybe_cast_name(other) do
+    {:error,
+     "Expected a Localize.PersonName struct or a struct that can be converted to one. " <>
+       "Found #{inspect(other)}"}
+  end
+
+  defp validate_converted_name(%__MODULE__{} = name, _module) do
+    validate_person_name(name)
+  end
+
+  defp validate_converted_name(other, module) do
+    {:error,
+     "The Localize.PersonName.Convertible implementation for #{inspect(module)} " <>
+       "must return a Localize.PersonName struct. Found #{inspect(other)}"}
+  end
+
+  defp validate_person_name(%__MODULE__{} = name) do
+    name
+    |> Map.from_struct()
+    |> Map.to_list()
+    |> validate_name()
+  end
+
+  defp validate_options_list(options) do
+    if Keyword.keyword?(options) do
+      :ok
     else
-      # credo:disable-for-next-line Credo.Check.Refactor.Apply
-      apply(Localize.PersonName.Convertible, :to_person_name, [name])
-      |> Formatter.wrap(:ok)
+      {:error, "Options must be a keyword list. Found #{inspect(options)}"}
     end
   end
 
@@ -511,6 +563,9 @@ defmodule Localize.PersonName do
           {:halt,
            {:error,
             "Invalid attribute value found for #{inspect(attribute)}. Found #{inspect(value)}"}}
+
+        other, _acc ->
+          {:halt, {:error, "Invalid attribute found: #{inspect(other)}"}}
       end)
 
     case validated do
@@ -520,10 +575,6 @@ defmodule Localize.PersonName do
       %__MODULE__{} = person_name ->
         validate_given_name_presence(person_name)
     end
-  end
-
-  defp validate_name(%{} = person_name) do
-    validate_given_name_presence(person_name)
   end
 
   defp validate_locale(options) do

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Localize pre-commit hook.
+# localize_person_names pre-commit hook.
 #
 # Runs `mix format` on every staged `.ex` / `.exs` / `.heex` file so
 # that CI's `mix format --check-formatted` cannot fail on a freshly-

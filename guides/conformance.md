@@ -4,17 +4,15 @@ The implementation fully meets the [TR35-8 PersonNames](https://www.unicode.org/
 
 This document describes cases where the CLDR person name test data produces results that are inconsistent with the specification text in [TR35-8 PersonNames](https://www.unicode.org/reports/tr35/tr35-personNames.html). These are filed as potential specification or test data bugs.
 
-## 1. Format Selection Tiebreaker Inconsistency (es_US, es_MX, es_419 — no longer in the test data)
+## 1. Format Selection Tiebreaker Inconsistency (es_US, es_MX, es_419) — retired test data
 
-CLDR removed the `es_US`, `es_MX`, `es_419` and `yo_BJ` test files in April 2024 ([CLDR-16938](https://unicode-org.atlassian.net/browse/CLDR-16938)), so the current conformance data no longer exercises this case. The analysis is kept because the question it raises about the specification stands.
+### Status
 
-### Affected locales
-
-`es_US`, `es_MX`, `es_419`
+Historical. CLDR removed the regional test files (`es_US.txt`, `es_MX.txt`, `es_419.txt` and thirteen others) from `common/testData/personNameTest` in April 2024 ([CLDR-16938](https://unicode-org.atlassian.net/browse/CLDR-16938)), between CLDR 44 and 45, and this library's conformance suite has mirrored the CLDR directory exactly since it moved to the CLDR 49 data. The 28 failures described here were against 2023-vintage copies of those files generated from older locale data, and no current CLDR test data exercises the discrepancy. The analysis is kept because the question about the spec's tiebreaker wording is still open.
 
 ### Summary
 
-When two namePatterns have equal numbers of populated fields, the spec says to select the pattern with the fewest unpopulated fields. The CLDR test data expects the pattern with MORE unpopulated fields to be selected in certain cases, contradicting the spec.
+When two namePatterns have equal numbers of populated fields, the spec says to select the pattern with the fewest unpopulated fields. The retired test data expected the pattern with MORE unpopulated fields to be selected in certain cases, contradicting the spec.
 
 ### Specification text
 
@@ -32,7 +30,7 @@ Locale `es_MX`, format parameters: `order: sorting, length: long, usage: referri
 
 The locale provides two sorting patterns for this combination:
 
-```
+```text
 Pattern A: {surname} {surname2}, {given-informal}    (3 fields)
 Pattern B: {surname}, {given-informal}               (2 fields)
 ```
@@ -78,9 +76,11 @@ The same pattern appeared across 28 test cases in `es_US`, `es_MX`, and `es_419`
 
 ### Test data references (CLDR 44 and earlier)
 
-* `es_MX.txt` line 645: `parameters; sorting; long; referring; informal` → expected `"Müller Käthe"`
-* `es_US.txt` line 124: `parameters; sorting; medium; referring; formal` → expected `"García Pérez, Lucía"`
-* `es_419.txt` line 134: `parameters; sorting; long; referring; informal` → expected `"Jacobsen Christopher"`
+* `es_MX.txt` line 645: `parameters; sorting; long; referring; informal` → expected `"Müller Käthe"`.
+
+* `es_US.txt` line 124: `parameters; sorting; medium; referring; formal` → expected `"García Pérez, Lucía"`.
+
+* `es_419.txt` line 134: `parameters; sorting; long; referring; informal` → expected `"Jacobsen Christopher"`.
 
 ## 2. Empty Field Removal Drops Grouping Punctuation (cs, sk — now fixed)
 
@@ -109,7 +109,7 @@ Locale `cs`, format parameters: `order: sorting, length: long, usage: referring,
 
 The format pattern is:
 
-```
+```text
 {surname-core}, {given} {given2} {surname-prefix} ({title}, {credentials})
 ```
 
@@ -117,7 +117,7 @@ Input PersonName: `title: "paní", given: "Alexandra", given2: "Zuzana", surname
 
 After field interpolation, the relevant segment is:
 
-```
+```elixir
 ..., " ", nil, " (", {:field, "paní"}, ...
 ```
 
@@ -150,8 +150,9 @@ The spec could be improved by explicitly addressing how grouping punctuation sho
 
 ### Test data references
 
-* `cs.txt` line 316: `parameters; sorting; long; referring; formal` → expected `"Machová, Alexandra Zuzana (paní, Ph.D.)"`
-* `sk.txt` line 307: `parameters; sorting; long; referring; formal` → expected `"Machová, Alexandra Zuzana (paní, Ph.D.)"`
+* `cs.txt` line 316: `parameters; sorting; long; referring; formal` → expected `"Machová, Alexandra Zuzana (paní, Ph.D.)"`.
+
+* `sk.txt` line 307: `parameters; sorting; long; referring; formal` → expected `"Machová, Alexandra Zuzana (paní, Ph.D.)"`.
 
 ## 3. Initial Derivation Requires UAX #29 Grapheme Clusters, Not Default Unicode Grapheme Clusters
 
@@ -194,7 +195,7 @@ Kannada word `ಕ್ಯಾಥಿ` (transliterated "Kyāthi"), composed of the co
 
 **Default grapheme clusters** (Erlang/Elixir `String.graphemes/1`):
 
-```
+```text
 ["ಕ್ಯಾ", "ಥಿ"]   — 2 clusters
 ```
 
@@ -202,7 +203,7 @@ The virama (U+0CCD) joins KA + YA + AA into one large conjunct cluster.
 
 **UAX #29 extended grapheme clusters** (ICU, `Unicode.String.split(break: :grapheme)`):
 
-```
+```text
 ["ಕ್", "ಯಾ", "ಥಿ"]   — 3 clusters
 ```
 
@@ -244,14 +245,17 @@ The phrase "first grapheme cluster" in the initial derivation section should be 
 
 ### Test data references
 
-* `kn.txt` line 520: initial for `ಕ್ಯಾಥಿ` → expected `ಕ್.`
-* `ml.txt` line 643: initial for `സ്‌റ്റോബർ` → expected `സ്‌.`
+* `kn.txt` line 520: initial for `ಕ್ಯಾಥಿ` → expected `ಕ್.`.
 
-The CLDR 49 `km.txt` no longer contains `ហ្សាសាស្តូ`; the Khmer row above still shows how the two algorithms differ for a coeng.
+* `ml.txt` line 643: initial for `സ്‌റ്റോബർ` → expected `സ്‌.`.
 
-## 4. Test Data / Locale Data Mismatch for yo_BJ (Yoruba-Benin — no longer in the test data)
+The CLDR 49 `km.txt` no longer contains `ហ្សាសាស្តូ`; the Khmer row in the table above still shows how the two algorithms differ for a coeng.
 
-CLDR removed the `es_US`, `es_MX`, `es_419` and `yo_BJ` test files in April 2024 ([CLDR-16938](https://unicode-org.atlassian.net/browse/CLDR-16938)), so the current conformance data no longer exercises this case.
+## 4. Test Data / Locale Data Mismatch for yo_BJ (Yoruba-Benin) — retired test data
+
+### Status
+
+Historical. `yo_BJ.txt` was one of the regional test files CLDR removed in April 2024 ([CLDR-16938](https://unicode-org.atlassian.net/browse/CLDR-16938)), between CLDR 44 and 45. The 27 failures described here were against a stale copy of that file; the current CLDR 49 `yo.txt` passes in full. The section is kept as a record of why the file disagreed with the locale data.
 
 ### Affected locales
 
@@ -267,7 +271,7 @@ Locale `yo_BJ`, format parameters: `order: givenFirst, length: short, usage: ref
 
 The locale format pattern is:
 
-```
+```text
 {given} {given2} {surname} {credentials}
 ```
 
@@ -285,7 +289,7 @@ Input PersonName: `given: "Olabisi", surname: "Adeboye"`, locale: `yo_BJ`.
 
 The `yo` locale has the identical format pattern for `givenFirst/short/referring/formal`:
 
-```
+```text
 {given} {given2} {surname} {credentials}
 ```
 
@@ -299,6 +303,26 @@ This affected 27 test cases in `yo_BJ.txt`, all involving `short/referring` or `
 
 ### Test data references (CLDR 44 and earlier)
 
-* `yo_BJ.txt` line 152: `parameters; givenFirst; short; referring; formal` → expected `"O. Adeboye"`, actual `"Olabisi Adeboye"`
-* `yo_BJ.txt` line 252: `parameters; sorting; short; referring; formal` → expected `"Akintola, A. A."`, actual `"Akintola, Adeolu Adegboyega"`
-* Compare `yo.txt` line 143: `parameters; givenFirst; short; referring; formal` → expected `"Olabisi Adeboye"` (full name, matches format data)
+* `yo_BJ.txt` line 152: `parameters; givenFirst; short; referring; formal` → expected `"O. Adeboye"`, actual `"Olabisi Adeboye"`.
+
+* `yo_BJ.txt` line 252: `parameters; sorting; short; referring; formal` → expected `"Akintola, A. A."`, actual `"Akintola, Adeolu Adegboyega"`.
+
+* Compare `yo.txt` line 143: `parameters; givenFirst; short; referring; formal` → expected `"Olabisi Adeboye"` (full name, matches format data).
+
+## 5. Malayalam Sample Names Contain a Digit Homoglyph
+
+### Affected locales
+
+`ml`
+
+### Summary
+
+The `ml` sample names in CLDR 49 spell the given2 field `സീസ൪ മാ൪ട്ടിൻ` with U+0D6A MALAYALAM DIGIT FOUR (`൪`) where the chillu letter U+0D7C (`ർ`) is intended; the two glyphs look alike. The same text appears in `common/main/ml.xml` and in the generated `ml.txt` expectations.
+
+### Effect on this implementation
+
+None since the initial filter was aligned with CLDR's reference formatter. A word takes an initial when its first code point is a letter, whatever follows, so `സീസ൪` yields `സീ.` as the test data expects. An earlier version required every following character to be a letter, punctuation or extend character, which silently dropped the word.
+
+### Suggested upstream fix
+
+Replace U+0D6A with U+0D7C in the `ml` sample names in `common/main/ml.xml` and regenerate `ml.txt`.

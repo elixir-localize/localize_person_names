@@ -24,6 +24,11 @@ defmodule Localize.PersonNameError do
 
   * A `t:Localize.PersonNameError.t/0` struct.
 
+  ### Examples
+
+      iex> Localize.PersonNameError.exception("no given name")
+      %Localize.PersonNameError{message: "no given name"}
+
   """
   @impl true
   def exception(message) do

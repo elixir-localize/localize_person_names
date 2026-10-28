@@ -1,21 +1,18 @@
 defmodule Localize.PersonName.FormatTest do
   use ExUnit.Case, async: true
 
-  # si, my, ml (11 failures against the CLDR 49 data): Unicode.String
-  # word-break segmentation produces different word boundaries than ICU
-  # for multi-word names in Sinhala, Myanmar and Malayalam, leading to
-  # incorrect initial generation for compound words. Khmer, excluded for
-  # the same reason before CLDR 49, now passes.
+  # The conformance data is CLDR's common/testData/personNameTest, mirrored
+  # exactly. Excluded locales are listed in guides/conformance.md.
+  #
+  # my (1 failure): Unicode.String word-break segmentation splits a
+  # transliterated Myanmar given name into more words than ICU does, so the
+  # short referring format produces extra initials.
 
   @tests 1..1000
 
   @all_locales Localize.PersonName.TestData.all_locales()
 
-  @failing_locales [
-    :si,
-    :my,
-    :ml
-  ]
+  @failing_locales [:my]
 
   @test_locales @all_locales -- @failing_locales
 
