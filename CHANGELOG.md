@@ -2,13 +2,19 @@
 
 All notable changes to this project will be documented in this file. This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] - 2026-10-28
+
+### Added
+
+* `usage-rules.md` ships in the package with the rules an LLM coding agent needs to use the library correctly.
 
 ### Changed
 
 * Formats with CLDR 49 locale data, so it requires Localize 1.4 or later.
 
-* Conformance test data is CLDR 49 beta1 and mirrors `common/testData/personNameTest` exactly: sixteen regional files CLDR retired in CLDR 45 are removed and `br` is added. Only `my` is excluded now, for one word-break failure.
+* Conformance test data is CLDR 49 and mirrors `common/testData/personNameTest` exactly: sixteen regional files CLDR retired in CLDR 45 are removed and `br` is added. Only `my` is excluded now, for one word-break failure.
+
+* `Localize.PersonName.new/1` accepts a map of attributes as well as a keyword list.
 
 ### Fixed
 

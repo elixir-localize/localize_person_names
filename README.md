@@ -96,7 +96,7 @@ A `:personName` MF2 function is provided as `Localize.PersonName.MF2` for use wi
 
 ### Locale coverage
 
-The test data mirrors CLDR's `common/testData/personNameTest` directory exactly: 111 locale files as of CLDR 49 beta1. 110 pass all tests. The one excluded locale is documented in the [CLDR Specification Conformance](https://hexdocs.pm/localize_person_names/conformance.html) guide and summarised below:
+The test data mirrors CLDR's `common/testData/personNameTest` directory exactly: 111 locale files as of CLDR 49. 110 pass all tests. The one excluded locale is documented in the [CLDR Specification Conformance](https://hexdocs.pm/localize_person_names/conformance.html) guide and summarised below:
 
 | Locale | Failures | Cause |
 |--------|----------|-------|

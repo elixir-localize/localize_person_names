@@ -10,7 +10,9 @@ Built on [`localize`](https://hex.pm/packages/localize).
 
 ## Core conventions
 
-* Build a name with `Localize.PersonName.new/1`, which returns `{:ok, name}` or `{:error, exception}`. Never construct the struct literally.
+* Build a name with `Localize.PersonName.new/1`, which returns `{:ok, name}` or `{:error, reason}`. Never construct the struct literally.
+
+* Format with `Localize.PersonName.to_string/2`, which returns `{:ok, string}` or `{:error, reason}` and never raises; `to_string!/2` raises `Localize.PersonNameError`. Any struct with a `Localize.PersonName.Convertible` implementation, or whose module implements the `Localize.PersonName` behaviour, is accepted directly.
 
 * Components are named fields — `:given_name`, `:surname`, `:informal_given_name`, `:generation`, `:credentials` — not positional.
 
@@ -24,9 +26,9 @@ Built on [`localize`](https://hex.pm/packages/localize).
 
 Format through the CLDR parameters rather than by concatenating: the specification defines `format` (`:long`, `:medium`, `:short`), `formality` (`:formal`, `:informal`), `usage` (`:referring`, `:addressing`, `:monogram`) and `order`.
 
-The package also registers an MF2 function, so a name can be formatted inside a message:
+The package ships `Localize.PersonName.MF2`. Register it as `"personName"` under `config :localize, :mf2_functions` or in the `:functions` option of `Localize.Message.format/3`, and a name can be formatted inside a message:
 
-```
+```text
 {$name :personName format=long formality=formal usage=referring}
 ```
 
