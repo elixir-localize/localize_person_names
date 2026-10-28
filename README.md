@@ -82,11 +82,11 @@ Localize.PersonName.to_string(name, locale: :ja)
 
 ## Integrating existing structs
 
-Any struct can participate in person name formatting, either through the `Localize.PersonName.Convertible` protocol or through the `Localize.PersonName` behaviour. See [Integrating existing name structs](https://github.com/elixir-localize/localize_person_names/blob/v1.1.0/guides/integrating_existing_structs.md) for the full comparison and recommendations.
+Any struct can participate in person name formatting, either through the `Localize.PersonName.Convertible` protocol or through the `Localize.PersonName` behaviour. See [Integrating existing name structs](https://hexdocs.pm/localize_person_names/integrating_existing_structs.html) for the full comparison and recommendations.
 
 ## MF2 message formatting
 
-A `:personName` MF2 function is provided as `Localize.PersonName.MF2` for use with [Localize.Message](https://hexdocs.pm/localize/Localize.Message.html). See [Using Localize.PersonName with Localize.Message](https://github.com/elixir-localize/localize_person_names/blob/v1.1.0/guides/message_formatting.md) for formal and informal worked examples.
+A `:personName` MF2 function is provided as `Localize.PersonName.MF2` for use with [Localize.Message](https://hexdocs.pm/localize/Localize.Message.html). See [Using Localize.PersonName with Localize.Message](https://hexdocs.pm/localize_person_names/message_formatting.html) for formal and informal worked examples.
 
 ## Conformance
 
@@ -96,7 +96,7 @@ A `:personName` MF2 function is provided as `Localize.PersonName.MF2` for use wi
 
 ### Locale coverage
 
-The test data mirrors CLDR's `common/testData/personNameTest` directory exactly: 111 locale files as of CLDR 49 beta1. 110 pass all tests. The one excluded locale is documented in the [CLDR Specification Conformance](https://github.com/elixir-localize/localize_person_names/blob/v1.1.0/guides/conformance.md) guide and summarised below:
+The test data mirrors CLDR's `common/testData/personNameTest` directory exactly: 111 locale files as of CLDR 49 beta1. 110 pass all tests. The one excluded locale is documented in the [CLDR Specification Conformance](https://hexdocs.pm/localize_person_names/conformance.html) guide and summarised below:
 
 | Locale | Failures | Cause |
 |--------|----------|-------|
@@ -104,7 +104,7 @@ The test data mirrors CLDR's `common/testData/personNameTest` directory exactly:
 
 ### Specification deviances
 
-See [CLDR Specification Conformance](https://github.com/elixir-localize/localize_person_names/blob/v1.1.0/guides/conformance.md) for detailed analysis of these issues:
+See [CLDR Specification Conformance](https://hexdocs.pm/localize_person_names/conformance.html) for detailed analysis of these issues:
 
 1. **Empty field removal with grouping punctuation** (cs, sk) — Fixed in this implementation by detecting parentheses/brackets during literal coalescing.
 
@@ -120,16 +120,16 @@ See [TODO.md](https://github.com/elixir-localize/localize_person_names/blob/v1.1
 
 ## Documentation
 
-* [Integrating existing name structs](https://github.com/elixir-localize/localize_person_names/blob/v1.1.0/guides/integrating_existing_structs.md) — two ways to wire existing domain structs (`%User{}`, `%Customer{}`, etc.) into the formatter: the `Localize.PersonName.Convertible` protocol (recommended) and the `Localize.PersonName` behaviour.
+* [Integrating existing name structs](https://hexdocs.pm/localize_person_names/integrating_existing_structs.html) — two ways to wire existing domain structs (`%User{}`, `%Customer{}`, etc.) into the formatter: the `Localize.PersonName.Convertible` protocol (recommended) and the `Localize.PersonName` behaviour.
 
-* [Using Localize.PersonName with Localize.Message](https://github.com/elixir-localize/localize_person_names/blob/v1.1.0/guides/message_formatting.md) — integrating person name formatting into MF2 message templates via a custom function, with formal and informal worked examples.
+* [Using Localize.PersonName with Localize.Message](https://hexdocs.pm/localize_person_names/message_formatting.html) — integrating person name formatting into MF2 message templates via a custom function, with formal and informal worked examples.
 
-* [Cultural naming conventions](https://github.com/elixir-localize/localize_person_names/blob/v1.1.0/guides/cultural_naming_conventions.md) — a field guide to how naming differs across cultures, the risks of getting it wrong, and how this library addresses them.
+* [Cultural naming conventions](https://hexdocs.pm/localize_person_names/cultural_naming_conventions.html) — a field guide to how naming differs across cultures, the risks of getting it wrong, and how this library addresses them.
 
-* [CLDR Specification Conformance](https://github.com/elixir-localize/localize_person_names/blob/v1.1.0/guides/conformance.md) — where CLDR's test data and the specification text disagree, and how this implementation resolves each case.
+* [CLDR Specification Conformance](https://hexdocs.pm/localize_person_names/conformance.html) — where CLDR's test data and the specification text disagree, and how this implementation resolves each case.
 
 Full API documentation is on [HexDocs](https://hexdocs.pm/localize_person_names).
 
 ## License
 
-Apache License 2.0. See [LICENSE.md](LICENSE.md).
+Apache License 2.0. See [LICENSE.md](https://github.com/elixir-localize/localize_person_names/blob/v1.1.0/LICENSE.md).
