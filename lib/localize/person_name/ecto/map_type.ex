@@ -175,8 +175,13 @@ if Code.ensure_loaded?(Ecto.Type) do
       {:cont, {:ok, Map.put(acc, field, value)}}
     end
 
-    defp validate_locale(nil), do: {:ok, nil}
-    defp validate_locale(%LanguageTag{} = locale), do: {:ok, locale}
+    defp validate_locale(nil) do
+      {:ok, nil}
+    end
+
+    defp validate_locale(%LanguageTag{} = locale) do
+      {:ok, locale}
+    end
 
     defp validate_locale(locale) when is_binary(locale) or is_atom(locale) do
       case Localize.validate_locale(locale) do
@@ -185,11 +190,21 @@ if Code.ensure_loaded?(Ecto.Type) do
       end
     end
 
-    defp validate_locale(_locale), do: :error
+    defp validate_locale(_locale) do
+      :error
+    end
 
-    defp name_order(nil), do: {:ok, nil}
-    defp name_order(""), do: {:ok, nil}
-    defp name_order(order) when order in @name_orders, do: {:ok, order}
+    defp name_order(nil) do
+      {:ok, nil}
+    end
+
+    defp name_order("") do
+      {:ok, nil}
+    end
+
+    defp name_order(order) when order in @name_orders do
+      {:ok, order}
+    end
 
     defp name_order(order) when is_binary(order) do
       case Map.fetch(@name_order_strings, order) do
@@ -198,10 +213,14 @@ if Code.ensure_loaded?(Ecto.Type) do
       end
     end
 
-    defp name_order(_order), do: :error
+    defp name_order(_order) do
+      :error
+    end
 
     defp field_name(key) when is_atom(key) do
-      if key in @fields, do: key
+      if key in @fields do
+        key
+      end
     end
 
     defp field_name(key) when is_binary(key) do

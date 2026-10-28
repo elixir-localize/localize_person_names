@@ -1,7 +1,9 @@
 defimpl Localize.Chars, for: Localize.PersonName do
   @moduledoc false
 
-  def to_string(value), do: to_string(value, [])
+  def to_string(value) do
+    to_string(value, [])
+  end
 
   def to_string(value, options) do
     case Localize.PersonName.to_string(value, options) do

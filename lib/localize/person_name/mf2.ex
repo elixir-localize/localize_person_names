@@ -44,58 +44,105 @@ defmodule Localize.PersonName.MF2 do
   @behaviour Localize.Message.Function
 
   @impl true
-  def format(value, func_opts, options) when is_struct(value) do
-    localize_opts = build_options(func_opts, options)
-    Localize.PersonName.to_string(value, localize_opts)
+  def format(value, function_options, options) when is_struct(value) do
+    localize_options = build_options(function_options, options)
+    Localize.PersonName.to_string(value, localize_options)
   end
 
-  def format(value, _func_opts, _options) do
+  def format(value, _function_options, _options) do
     {:error,
      "the :personName function requires a PersonName struct, " <>
        "got #{inspect(value)}"}
   end
 
-  defp build_options(func_opts, options) do
-    opts = []
-    opts = if locale = Keyword.get(options, :locale), do: [{:locale, locale} | opts], else: opts
-    opts = map_option(opts, func_opts, "format", :format, &parse_format/1)
-    opts = map_option(opts, func_opts, "formality", :formality, &parse_formality/1)
-    opts = map_option(opts, func_opts, "usage", :usage, &parse_usage/1)
-    opts = map_option(opts, func_opts, "order", :order, &parse_order/1)
-    opts
+  defp build_options(function_options, options) do
+    locale_options =
+      case Keyword.get(options, :locale) do
+        nil -> []
+        locale -> [locale: locale]
+      end
+
+    locale_options
+    |> map_option(function_options, "format", :format, &parse_format/1)
+    |> map_option(function_options, "formality", :formality, &parse_formality/1)
+    |> map_option(function_options, "usage", :usage, &parse_usage/1)
+    |> map_option(function_options, "order", :order, &parse_order/1)
   end
 
-  defp map_option(opts, func_opts, mf2_name, opt_name, parser) do
-    # MF2 option keys may be atomized (when a matching existing atom
-    # is found) or kept as strings. Check both forms.
-    value = Map.get(func_opts, String.to_atom(mf2_name)) || Map.get(func_opts, mf2_name)
+  # MF2 option keys may arrive as atoms or as strings. The names are
+  # literals of this module, so the atoms already exist.
+  defp map_option(options, function_options, mf2_name, option_name, parser) do
+    value =
+      Map.get(function_options, String.to_existing_atom(mf2_name)) ||
+        Map.get(function_options, mf2_name)
 
-    case value do
-      nil -> opts
-      val -> [{opt_name, parser.(val)} | opts]
+    if is_nil(value) do
+      options
+    else
+      [{option_name, parser.(value)} | options]
     end
   end
 
-  defp parse_format("short"), do: :short
-  defp parse_format("medium"), do: :medium
-  defp parse_format("long"), do: :long
-  defp parse_format(other) when is_binary(other), do: String.to_atom(other)
-  defp parse_format(other), do: other
+  # Unrecognised values are passed through unchanged so that
+  # Localize.PersonName.to_string/2 rejects them. They are never
+  # converted to atoms: option values come from message templates.
+  defp parse_format("short") do
+    :short
+  end
 
-  defp parse_formality("formal"), do: :formal
-  defp parse_formality("informal"), do: :informal
-  defp parse_formality(other) when is_binary(other), do: String.to_atom(other)
-  defp parse_formality(other), do: other
+  defp parse_format("medium") do
+    :medium
+  end
 
-  defp parse_usage("addressing"), do: :addressing
-  defp parse_usage("referring"), do: :referring
-  defp parse_usage("monogram"), do: :monogram
-  defp parse_usage(other) when is_binary(other), do: String.to_atom(other)
-  defp parse_usage(other), do: other
+  defp parse_format("long") do
+    :long
+  end
 
-  defp parse_order("givenFirst"), do: :given_first
-  defp parse_order("surnameFirst"), do: :surname_first
-  defp parse_order("sorting"), do: :sorting
-  defp parse_order(other) when is_binary(other), do: String.to_atom(other)
-  defp parse_order(other), do: other
+  defp parse_format(other) do
+    other
+  end
+
+  defp parse_formality("formal") do
+    :formal
+  end
+
+  defp parse_formality("informal") do
+    :informal
+  end
+
+  defp parse_formality(other) do
+    other
+  end
+
+  defp parse_usage("addressing") do
+    :addressing
+  end
+
+  defp parse_usage("referring") do
+    :referring
+  end
+
+  defp parse_usage("monogram") do
+    :monogram
+  end
+
+  defp parse_usage(other) do
+    other
+  end
+
+  defp parse_order("givenFirst") do
+    :given_first
+  end
+
+  defp parse_order("surnameFirst") do
+    :surname_first
+  end
+
+  defp parse_order("sorting") do
+    :sorting
+  end
+
+  defp parse_order(other) do
+    other
+  end
 end

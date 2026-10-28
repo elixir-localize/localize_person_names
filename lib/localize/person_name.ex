@@ -118,6 +118,12 @@ defmodule Localize.PersonName do
     locale: nil
   ]
 
+  # A name needs only a given name to be minimally viable.
+  @non_string_attributes [:locale, :preferred_order]
+  @string_attributes Keyword.keys(@person_name) -- @non_string_attributes
+  @all_attributes @string_attributes ++ @non_string_attributes
+  @valid_name_order Formatter.valid_name_order()
+
   defstruct @person_name
 
   @typedoc """
@@ -419,11 +425,15 @@ defmodule Localize.PersonName do
 
   @impl Localize.PersonName
   @doc false
-  def title(%__MODULE__{title: title}), do: title
+  def title(%__MODULE__{title: title}) do
+    title
+  end
 
   @impl Localize.PersonName
   @doc false
-  def given_name(%__MODULE__{given_name: given_name}), do: given_name
+  def given_name(%__MODULE__{given_name: given_name}) do
+    given_name
+  end
 
   @impl Localize.PersonName
   @doc false
@@ -442,7 +452,9 @@ defmodule Localize.PersonName do
 
   @impl Localize.PersonName
   @doc false
-  def surname(%__MODULE__{surname: surname}), do: surname
+  def surname(%__MODULE__{surname: surname}) do
+    surname
+  end
 
   @impl Localize.PersonName
   @doc false
@@ -451,15 +463,21 @@ defmodule Localize.PersonName do
 
   @impl Localize.PersonName
   @doc false
-  def generation(%__MODULE__{generation: generation}), do: generation
+  def generation(%__MODULE__{generation: generation}) do
+    generation
+  end
 
   @impl Localize.PersonName
   @doc false
-  def credentials(%__MODULE__{credentials: credentials}), do: credentials
+  def credentials(%__MODULE__{credentials: credentials}) do
+    credentials
+  end
 
   @impl Localize.PersonName
   @doc false
-  def locale(%__MODULE__{locale: locale}), do: locale
+  def locale(%__MODULE__{locale: locale}) do
+    locale
+  end
 
   @impl Localize.PersonName
   @doc false
@@ -526,12 +544,6 @@ defmodule Localize.PersonName do
       {:error, "Options must be a keyword list. Found #{inspect(options)}"}
     end
   end
-
-  # A name needs only a given name to be minimally viable.
-  @non_string_attributes [:locale, :preferred_order]
-  @string_attributes Keyword.keys(@person_name) -- @non_string_attributes
-  @all_attributes @string_attributes ++ @non_string_attributes
-  @valid_name_order Formatter.valid_name_order()
 
   defp validate_name(attributes) when is_list(attributes) do
     validated =

@@ -42,6 +42,15 @@ defmodule Localize.PersonName.Formatter do
   # Turkish, Azeri, Tatar, Turkmen, Uygur, Uzbek
   @turkic_languages [:tr, :az, :tt, :tk, :ug, :uz]
 
+  @considered_the_same [:Jpan, :Hani, :Kana, :Hira]
+
+  # A word takes an initial when it starts with a letter, whatever follows.
+  # This matches CLDR's reference formatter (Character.isLetter on the first
+  # code point), which generated the conformance data. Requiring the rest of the
+  # word to be letters or punctuation dropped Sinhala words that carry a
+  # zero-width joiner and Malayalam words containing a digit homoglyph.
+  @starts_with_letter Unicode.Regex.compile!("^\\p{L}")
+
   # Preference is given to the name's preferred order, then the locales preferred
   # order, then this default order.
   @default_order :given_first
@@ -138,9 +147,17 @@ defmodule Localize.PersonName.Formatter do
   end
 
   @doc false
-  def remove_leading_emptiness([{:field, value} | rest]), do: [{:field, value} | rest]
-  def remove_leading_emptiness([_first | rest]), do: remove_leading_emptiness(rest)
-  def remove_leading_emptiness([]), do: []
+  def remove_leading_emptiness([{:field, value} | rest]) do
+    [{:field, value} | rest]
+  end
+
+  def remove_leading_emptiness([_first | rest]) do
+    remove_leading_emptiness(rest)
+  end
+
+  def remove_leading_emptiness([]) do
+    []
+  end
 
   @doc false
   def remove_trailing_emptiness(elements) do
@@ -224,9 +241,17 @@ defmodule Localize.PersonName.Formatter do
     do: remove_up_to_nil(rest)
 
   @doc false
-  def combine_binary(first, ""), do: first
-  def combine_binary("", second), do: second
-  def combine_binary(first, first), do: first
+  def combine_binary(first, "") do
+    first
+  end
+
+  def combine_binary("", second) do
+    second
+  end
+
+  def combine_binary(first, first) do
+    first
+  end
 
   @doc false
   def combine_binary(first, second) do
@@ -284,7 +309,6 @@ defmodule Localize.PersonName.Formatter do
     name_language in [:ja, :zh, :yue] && formatting_language in [:ja, :zh, :yue]
   end
 
-  @considered_the_same [:Jpan, :Hani, :Kana, :Hira]
   defp considered_the_same_script?(name_script, name_script) do
     true
   end
@@ -518,13 +542,6 @@ defmodule Localize.PersonName.Formatter do
     |> :erlang.iolist_to_binary()
   end
 
-  # A word takes an initial when it starts with a letter, whatever follows.
-  # This matches CLDR's reference formatter (Character.isLetter on the first
-  # code point), which generated the conformance data. Requiring the rest of the
-  # word to be letters or punctuation dropped Sinhala words that carry a
-  # zero-width joiner and Malayalam words containing a digit homoglyph.
-  @starts_with_letter Unicode.Regex.compile!("^\\p{L}")
-
   defp initialize_word(word, locale, initial_template, acc, false = _retain_punctuation?) do
     if Unicode.Regex.match?(@starts_with_letter, word) do
       add_initial(word, locale, initial_template, acc)
@@ -582,17 +599,33 @@ defmodule Localize.PersonName.Formatter do
        when not is_nil(locale_id),
        do: locale_id
 
-  defp locale_to_atom(%Localize.LanguageTag{language: language}), do: language
-  defp locale_to_atom(locale) when is_atom(locale), do: locale
-  defp locale_to_atom(_locale), do: :en
+  defp locale_to_atom(%Localize.LanguageTag{language: language}) do
+    language
+  end
+
+  defp locale_to_atom(locale) when is_atom(locale) do
+    locale
+  end
+
+  defp locale_to_atom(_locale) do
+    :en
+  end
 
   defp mode_from_locale(%{cldr_locale_id: locale}) do
     mode_from_locale(locale)
   end
 
-  defp mode_from_locale(:el), do: :greek
-  defp mode_from_locale(locale) when locale in @turkic_languages, do: :turkic
-  defp mode_from_locale(_), do: :default
+  defp mode_from_locale(:el) do
+    :greek
+  end
+
+  defp mode_from_locale(locale) when locale in @turkic_languages do
+    :turkic
+  end
+
+  defp mode_from_locale(_) do
+    :default
+  end
 
   # Join multiple initials together
 
@@ -797,7 +830,11 @@ defmodule Localize.PersonName.Formatter do
           nil
         end
 
-      if l2 && l2 != l1, do: [l1, l2], else: [l1]
+      if l2 && l2 != l1 do
+        [l1, l2]
+      else
+        [l1]
+      end
     end)
   end
 
@@ -888,7 +925,12 @@ defmodule Localize.PersonName.Formatter do
 
       field, {fields, populated} ->
         fields = fields + 1
-        if filled?(field, name), do: {fields, populated + 1}, else: {fields, populated}
+
+        if filled?(field, name) do
+          {fields, populated + 1}
+        else
+          {fields, populated}
+        end
     end)
   end
 

@@ -71,5 +71,7 @@ defprotocol Localize.PersonName.Convertible do
 end
 
 defimpl Localize.PersonName.Convertible, for: Localize.PersonName do
-  def to_person_name(person_name), do: person_name
+  def to_person_name(person_name) do
+    person_name
+  end
 end

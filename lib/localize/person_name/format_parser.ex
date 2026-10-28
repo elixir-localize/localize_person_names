@@ -32,10 +32,6 @@ defmodule Localize.PersonName.FormatParser do
     end
   end
 
-  def formats_for(locale_id) when is_binary(locale_id) do
-    formats_for(String.to_atom(locale_id))
-  end
-
   @doc """
   Returns whether a locale has person name formatting data that
   differs from the root locale.
@@ -65,7 +61,9 @@ defmodule Localize.PersonName.FormatParser do
     end
   end
 
-  def has_formatting_data?(_), do: false
+  def has_formatting_data?(_) do
+    false
+  end
 
   defp load_and_parse(locale_id) do
     case Localize.Locale.get(locale_id, [:person_names]) do
@@ -165,8 +163,13 @@ defmodule Localize.PersonName.FormatParser do
     end)
   end
 
-  defp atomize_string(value) when is_binary(value), do: String.to_atom(value)
-  defp atomize_string(value) when is_atom(value), do: value
+  defp atomize_string(value) when is_binary(value) do
+    String.to_atom(value)
+  end
+
+  defp atomize_string(value) when is_atom(value) do
+    value
+  end
 
   # Convert camelCase to snake_case for field names.
   defp underscore(<<h, t::binary>>) when h >= ?A and h <= ?Z do
@@ -177,7 +180,9 @@ defmodule Localize.PersonName.FormatParser do
     <<h>> <> do_underscore(t, h)
   end
 
-  defp underscore(""), do: ""
+  defp underscore("") do
+    ""
+  end
 
   defp do_underscore(<<h, t::binary>>, _prev) when h >= ?A and h <= ?Z do
     <<?_, h + 32>> <> do_underscore(t, h)
