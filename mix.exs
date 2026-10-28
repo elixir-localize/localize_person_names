@@ -109,9 +109,7 @@ defmodule LocalizePersonNames.MixProject do
 
   defp deps do
     [
-      # Localize main carries CLDR 49. Hex cannot publish a git dependency, so this
-      # becomes a version requirement once a CLDR 49 Localize is on hex.
-      {:localize, github: "elixir-localize/localize", branch: "main", override: true},
+      {:localize, "~> 1.4"},
       {:unicode_string, "~> 2.0"},
       {:ecto, "~> 3.12", optional: true},
       {:ex_doc, "~> 0.34", optional: true, runtime: false},

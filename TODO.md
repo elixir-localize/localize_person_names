@@ -10,11 +10,11 @@ Tracked implementation gaps and release chores. Analysis of the spec's subtler p
 
 ## Blocked
 
-* [ ] **Restore the hex `localize` dependency** — `mix.exs` takes Localize `main` from GitHub for CLDR 49 locale data, and hex cannot publish a git dependency. Blocked on Localize 1.4.0, built on CLDR 49 and expected 2026-10-16.
-
 * [ ] **Myanmar word-break exclusion** — one `my` conformance test fails because a transliterated given name splits into six words instead of two. Blocked on `unicode_string` dictionary coverage for transliterated Myanmar names.
 
 ## Done
+
+* [x] **Restore the hex `localize` dependency** — `{:localize, "~> 1.4"}` resolves to Localize 1.4.3, the first release with CLDR 49. 2026-10-28.
 
 * [x] **CLDR 49 alpha2 conformance data** — test data mirrors CLDR exactly, sixteen regional files CLDR retired in v45 removed, Breton added. 2026-09-21.
 
