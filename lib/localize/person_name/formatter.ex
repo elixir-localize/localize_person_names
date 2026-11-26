@@ -673,8 +673,8 @@ defmodule Localize.PersonName.Formatter do
     name_script = dominant_script(name)
 
     case find_likely_locale(name_script) do
-      {:ok, name_locale} when not is_nil(name_locale) -> {:ok, name_locale}
-      _ -> {:error, "No locale resolved for script #{inspect(name_script)}"}
+      {:ok, name_locale} -> {:ok, name_locale}
+      {:error, _reason} -> {:error, "No locale resolved for script #{inspect(name_script)}"}
     end
   end
 
@@ -702,7 +702,6 @@ defmodule Localize.PersonName.Formatter do
   # falling back to the formatting locale when there is no candidate.
   defp maximal_likely_locale(name_locale, formatting_locale) do
     case find_likely_locale(name_locale.script, name_locale.territory) do
-      {:ok, nil} -> {:ok, formatting_locale}
       {:ok, candidate} -> {:ok, candidate}
       {:error, _reason} -> {:ok, formatting_locale}
     end
