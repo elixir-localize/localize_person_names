@@ -58,8 +58,6 @@ defmodule Localize.PersonName.Formatter do
   # ASCII space used in the templates
   @format_space " "
 
-  @likely_subtags Localize.SupplementalData.likely_subtags()
-
   defguardp is_initial(term) when is_list(term)
 
   @doc false
@@ -733,37 +731,30 @@ defmodule Localize.PersonName.Formatter do
     Localize.Validity.Script.unicode_to_subtag!(name)
   end
 
+  # The most likely locale for a script, or for a script in a territory:
+  # TR35's Add Likely Subtags applied to `und-<script>` or
+  # `und-<script>-<territory>`, through Localize's public API, and validated
+  # so the result is a locale Localize has data for. The algorithm has its
+  # own fallbacks, down to `und` itself, so a script with no data of its own
+  # still resolves.
   defp find_likely_locale(script) do
-    key = "und-#{script}"
+    likely_locale(["und", script])
+  end
 
-    case Map.get(@likely_subtags, key) do
-      nil ->
-        # Fall back to "und" which maps to en-Latn-US
-        case Map.get(@likely_subtags, "und") do
-          nil ->
-            {:ok, nil}
-
-          %{language: language, script: sc, territory: territory} ->
-            locale_id = Localize.Locale.locale_id_from(language, sc, territory, [])
-            Localize.validate_locale(locale_id)
-        end
-
-      %{language: language, script: sc, territory: territory} ->
-        locale_id = Localize.Locale.locale_id_from(language, sc, territory, [])
-        Localize.validate_locale(locale_id)
-    end
+  defp find_likely_locale(script, nil) do
+    find_likely_locale(script)
   end
 
   defp find_likely_locale(script, territory) do
-    key = "und-#{script}-#{territory}"
+    likely_locale(["und", script, territory])
+  end
 
-    case Map.get(@likely_subtags, key) do
-      nil ->
-        find_likely_locale(script)
+  defp likely_locale(subtags) do
+    locale_id = Enum.map_join(subtags, "-", &to_string/1)
 
-      %{language: language, script: sc, territory: terr} ->
-        locale_id = Localize.Locale.locale_id_from(language, sc, terr, [])
-        Localize.validate_locale(locale_id)
+    with {:ok, tag} <- Localize.LanguageTag.parse(locale_id),
+         {:ok, maximized} <- Localize.LanguageTag.add_likely_subtags(tag) do
+      Localize.validate_locale(maximized.canonical_locale_id)
     end
   end
 

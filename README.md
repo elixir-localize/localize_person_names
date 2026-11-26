@@ -27,7 +27,7 @@ Requires **Elixir 1.17** or later on **OTP 26** or later.
 ```elixir
 def deps do
   [
-    {:localize_person_names, "~> 1.1"}
+    {:localize_person_names, "~> 1.2"}
   ]
 end
 ```
@@ -116,7 +116,7 @@ See [CLDR Specification Conformance](https://hexdocs.pm/localize_person_names/co
 
 ## Known limitations
 
-See [TODO.md](https://github.com/elixir-localize/localize_person_names/blob/v1.1.0/TODO.md) for tracked implementation gaps.
+See [TODO.md](https://github.com/elixir-localize/localize_person_names/blob/v1.2.0/TODO.md) for tracked implementation gaps.
 
 ## Documentation
 
@@ -132,4 +132,4 @@ Full API documentation is on [HexDocs](https://hexdocs.pm/localize_person_names)
 
 ## License
 
-Apache License 2.0. See [LICENSE.md](https://github.com/elixir-localize/localize_person_names/blob/v1.1.0/LICENSE.md).
+Apache License 2.0. See [LICENSE.md](https://github.com/elixir-localize/localize_person_names/blob/v1.2.0/LICENSE.md).
